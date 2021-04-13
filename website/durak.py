@@ -74,7 +74,15 @@ class Card():
     # card's symbol
     def __ge__(self, other):
         return self.symbol >= other.symbol
-
+    
+    #return the suit of the card
+    def get_suit(self):
+        return self.suit
+    
+    #return the symbol of the card
+    def get_symbol(self):
+        return self.symbol
+    
     # Return the image file of this card
     # e.g. '7H.png' for 7 of hearts
     def get_image(self):
@@ -133,6 +141,7 @@ class DurakGame():
     def __init__(self, lowest_card):
         self.deck = Deck(lowest_card)
         self.players = []
+        self.trump = 0
 
     # Return the number of players in the game
     def get_player_count(self):
@@ -160,3 +169,8 @@ class DurakGame():
             cards = [self.deck.cards.pop() 
                      for _ in range(cards_per_player)]
             player.add_cards(cards)
+        
+        #Get the trump card and se the trump of the game
+        trump_card = self.deck.cards.pop()
+        self.trump = trump_card.get_suit()
+        
