@@ -21,3 +21,7 @@ six==1.11.0
 SQLAlchemy==1.4.3
 Werkzeug==1.0.1
 WTForms==2.3.3
+bidict==0.21.2
+Flask-SocketIO==5.0.1
+python-engineio==4.0.1
+python-socketio==5.1.0
