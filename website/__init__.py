@@ -5,6 +5,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_socketio import SocketIO
 from website.config import Config
+from website.durak import GameManager
 
 
 db = SQLAlchemy()
@@ -14,7 +15,7 @@ login_manager.login_view = 'users.login'
 login_manager.login_message_category = 'info'
 mail = Mail()
 socketio = SocketIO()
-
+gameManager = GameManager()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -27,8 +28,8 @@ def create_app(config_class=Config):
     socketio.init_app(app)
 
     from website.users.routes import users
-    from website.games.routes import games
-    from website.main.routes import main
+    from website.games import games
+    from website.main import main
     from website.errors.handlers import errors
     app.register_blueprint(users)
     app.register_blueprint(games)

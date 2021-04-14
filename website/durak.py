@@ -136,9 +136,15 @@ class Player():
 class DurakGame():
 
     # Initialize a game
+    # @param id
+    #   4 digit int id of the game
+    # @param name
+    #   The name given to the game
     # @param lowest_card
     #   Like Deck.__init__ lowest_card
-    def __init__(self, lowest_card):
+    def __init__(self, id, name, lowest_card):
+        self.id = id
+        self.name = name
         self.deck = Deck(lowest_card)
         self.players = []
         self.trump = 0
@@ -170,7 +176,33 @@ class DurakGame():
                      for _ in range(cards_per_player)]
             player.add_cards(cards)
         
-        #Get the trump card and se the trump of the game
+        #Get the trump card and set the trump of the game
         trump_card = self.deck.cards.pop()
         self.trump = trump_card.get_suit()
+
+        # TODO Pick the first player
         
+
+# Class to manage current games for the site
+class GameManager():
+
+    MAX_ID = 10000
+
+    # Initialize the game manager
+    def __init__(self):
+        # 4 digit integer id
+        #   Random initial id
+        self.current_id = 3865
+        # Dictionary of current games
+        #   key: id, value: game
+        self.current_games = {}
+
+    # Create a new DurakGame
+    def create_game(self, name, lowest_card):
+        # Increment the id
+        id = self.current_id
+        self.current_id = (self.current_id + 1) % GameManager.MAX_ID
+        # Create the game and add to current games
+        game = DurakGame(id, name, lowest_card)
+        self.current_games[id] = game
+        return game

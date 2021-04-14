@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h1>Lobby: {{ game.name }}</h1>
+<h2>Game id: {{ game.id }}</h2>
+
+<h2>Players</h2>
+{% for player in game.players %}
+    <h5>player.name</h5>
+{% endfor %}
+
+{% endblock content %}
