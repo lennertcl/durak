@@ -20,4 +20,6 @@ def leave(data):
 @socketio.on("startgame")
 def start_game(data):
     room = session.get("room")
+    game = gameManager.current_games[room]
+    game.start_game()
     emit('status', {"event": "startgame", "username": session.get("username")}, room=room)

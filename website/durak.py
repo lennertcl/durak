@@ -44,10 +44,15 @@ class Card():
         self.suit = suit
         self.symbol = symbol
     
-    # String representation of the card
+    # Representation of the card
     def __repr__(self):
         return "Card {0} of {1}".format(
                     self.symbol, self.suit)
+
+    # String notation of the card
+    def __str__(self):
+        return "{0}{1}".format(self.symbol,
+                               self.suit)
 
     # Less than
     # A card is less than another if its symbol is
@@ -156,6 +161,12 @@ class DurakGame():
     def get_player_count(self):
         return len(self.players)
 
+    # Get player by username
+    def get_player(self, username):
+        for player in self.players:
+            if player.username == username:
+                return player
+
     # Add a player to the lobby of the game by username
     # @param username
     #   The usename of the player to add
@@ -187,8 +198,8 @@ class DurakGame():
             player.add_cards(cards)
         
         #Get the trump card and set the trump of the game
-        trump_card = self.deck.cards.pop()
-        self.trump = trump_card.get_suit()
+        self.trump_card = self.deck.cards.pop()
+        self.trump = self.trump_card.get_suit()
 
         # Pick the first player (has lowest trump card)
         starting_player = self.players[0]

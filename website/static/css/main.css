@@ -3,3 +3,13 @@
     height:400px;
     background-color:darkgreen;
 }
+
+.card{
+    width:65px;
+    height:100px;
+}
+
+.cards{
+    margin-bottom: 0;
+    display: flex;
+}

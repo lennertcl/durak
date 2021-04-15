@@ -17,6 +17,22 @@
     <div class="col-md-8">
         <div class="game">
 
+            <div class="cards">
+                <img class="card" id="trumpcard"
+                    src="{{ url_for('static', filename='images/' + game.trump_card.get_image()) }}"/>
+                <img class="card" id="deck"
+                    src="{{ url_for('static', filename='images/red_back.png') }}"/>
+                <p style="font-size:xx-large;" id="deckcount">
+                    {{ game.deck.get_card_count() }}
+                </p>
+            </div>
+            <div class="cards">
+                {% for card in player.cards %}
+                    <img class="card"
+                        src="{{ url_for('static', filename='images/' + card.get_image()) }}"
+                        id="card{{card}}"/>
+                {% endfor %}
+            </div>
         </div>
     </div>
     <div class="col-md-4">

@@ -48,7 +48,8 @@ def lobby(game_id):
 def game(game_id):
     try:
         game = gameManager.current_games[game_id]
+        player = game.get_player(current_user.username)
     except KeyError:
         abort(404)
     return render_template('game.html', game=game,
-                username=current_user.username)
+                username=current_user.username, player=player)

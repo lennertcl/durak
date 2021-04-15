@@ -16,7 +16,7 @@
 
 <h2>Players</h2>
 <div id="players_list">
-    {% for player in game.players %}
+    {% for player in game.lobby + game.players %}
         <p id="player{{player.username}}">{{ player.username }}</p>
     {% endfor %}
 </div>
