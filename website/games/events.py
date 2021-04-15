@@ -1,22 +1,23 @@
 from flask import session
 from flask_socketio import send, emit, join_room, leave_room
-from website import socketio
+from website import socketio, gameManager
 
-@socketio.on("message")
-def message(data):
-
-    print(data)
-    send(data)
-    emit('some-event', 'custom message')
-
+# Event when user joins a room
 @socketio.on("join")
 def join(data):
-    join_room(data["room"])
-    send({"msg": data["username"] + " has joined"},
-        room=data["room"])
+    room = session.get("room")
+    join_room(room)
+    emit('status', {"event": "joined", "username": session.get("username")}, room=room)
 
+# Event when a user leaves a room
 @socketio.on("leave")
 def leave(data):
-    leave_room(data["room"])
-    send({"msg": data["username"] + " has left"},
-        room=data["room"])
+    room = session.get("room")
+    leave_room(room)
+    emit('status', {"event": "left", "username": session.get("username")}, room=room)
+
+# Event when a user clicks start game button
+@socketio.on("startgame")
+def start_game(data):
+    room = session.get("room")
+    emit('status', {"event": "startgame", "username": session.get("username")}, room=room)

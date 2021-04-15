@@ -10,9 +10,26 @@
     const username = `{{ username }}`;
 </script>
 
-<input type="text" id="test_input"/>
-<button type="button" id="test_button">Send</button>
+<h1>Game: {{ game.name }}</h1>
+<h2>Game id: {{ game.id }}</h2>
 
-<div id="test_display"></div>
+<div class="row">
+    <div class="col-md-8">
+        <div class="game">
+
+        </div>
+    </div>
+    <div class="col-md-4">
+        <h2>Players</h2>
+        <div id="players_list">
+            {% for player in game.players %}
+                <p id="player{{player.username}}">{{ player.username }}</p>
+            {% endfor %}
+        </div>
+
+        <button id="start_button" class="btn btn-primary">New game</button>
+        <a href=" {{ url_for('main.home') }} " id="leave_button" class="btn btn-danger">Leave game</a>
+    </div>
+</div>
 
 {% endblock content %}

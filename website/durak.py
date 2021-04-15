@@ -118,13 +118,10 @@ class Deck():
 class Player():
 
     # Initialize a player
-    # @param name
-    #   The name of the player
-    # @param id
-    #   The id of the player
-    def __init__(self, name, id):
-        self.name = name
-        self.id = id
+    # @param username
+    #   The username of the player
+    def __init__(self, username):
+        self.username = username
         self.cards = []
 
     # Add the given cards to the player's cards
@@ -146,23 +143,36 @@ class DurakGame():
         self.id = id
         self.name = name
         self.deck = Deck(lowest_card)
-        self.players = []
-        self.trump = 0
+        self.lobby = [] # The players in the lobby
+        self.players = [] # The players currently playing
+        self.trump = None
+        self.current_player = None
+
+    # Return the number of players in the lobby
+    def get_lobby_count(self):
+        return len(self.lobby)
 
     # Return the number of players in the game
     def get_player_count(self):
         return len(self.players)
 
-    # Add a player to the game
-    # @param player
-    #   The player to add
-    def add_player(self, player):
-        self.players.append(player)
+    # Add a player to the lobby of the game by username
+    # @param username
+    #   The usename of the player to add
+    def add_player(self, username):
+        # Only add the player if the player is not in the game yet
+        if not(any(p.username == username for p in self.players)):
+            player = Player(username)
+            self.lobby.append(player)
 
     # Start a game of durak
     # @param cards_per_player
     #   Initial amount of cards per player
     def start_game(self, cards_per_player=6):
+        # Transfer players from the lobby
+        self.players += self.lobby
+        self.lobby = []
+
         # Make sure there are enough cards
         if (self.get_player_count() * cards_per_player
             > self.deck.get_card_count()):
@@ -180,7 +190,15 @@ class DurakGame():
         trump_card = self.deck.cards.pop()
         self.trump = trump_card.get_suit()
 
-        # TODO Pick the first player
+        # Pick the first player (has lowest trump card)
+        starting_player = self.players[0]
+        lowest_trump = Card.ACE + 1
+        for player in self.players:
+            for card in player.cards:
+                if card.suit == self.trump:
+                    if card.symbol < lowest_trump:
+                        starting_player = player
+        self.current_player = starting_player
         
 
 # Class to manage current games for the site

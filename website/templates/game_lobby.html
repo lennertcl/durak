@@ -1,12 +1,27 @@
 {% extends "layout.html" %}
+
 {% block content %}
+<!-- SocketIO JS-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+<!-- Custom SocketIO JS-->
+<script src="{{ url_for('static', filename='js/socketio.js') }}"></script>
+<!-- Get username -->
+<script type="text/javascript">
+    const username = `{{ username }}`;
+    const game_url = `{{ url_for('games.game', game_id=game.id) }}`;
+</script>
 
 <h1>Lobby: {{ game.name }}</h1>
 <h2>Game id: {{ game.id }}</h2>
 
 <h2>Players</h2>
-{% for player in game.players %}
-    <h5>player.name</h5>
-{% endfor %}
+<div id="players_list">
+    {% for player in game.players %}
+        <p id="player{{player.username}}">{{ player.username }}</p>
+    {% endfor %}
+</div>
+
+<button id="start_button" class="btn btn-primary">Start game</button>
+<a href=" {{ url_for('main.home') }} " id="leave_button" class="btn btn-danger">Leave game</a>
 
 {% endblock content %}

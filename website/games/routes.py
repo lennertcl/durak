@@ -1,6 +1,6 @@
-from flask import render_template, url_for, redirect, abort
+from flask import render_template, url_for, redirect, abort, session
 from flask_login import current_user, login_required
-from website import db, gameManager
+from website import db, gameManager, socketio
 from website.games.forms import GameForm
 from . import games
 
@@ -21,19 +21,27 @@ def new_game():
 def join(game_id):
     try:
         game = gameManager.current_games[game_id]
+        session["room"] = game_id
+        session["username"] = current_user.username
+        game.add_player(current_user.username)
     except KeyError:
         abort(404)
-    # TODO add current user as player to game
-    return redirect(url_for('games.lobby', game_id=game.id))
+    return redirect(url_for('games.lobby', game_id=game.id), )
 
 @games.route("/game/lobby/<int:game_id>", methods=['GET', 'POST'])
 @login_required
 def lobby(game_id):
+    username = session.get("username", None)
+    room = session.get("room", None)
+    if not username or not room:
+        return redirect(url_for("games.join", game_id=game_id))
     try:
         game = gameManager.current_games[game_id]
+        print(game.players)
     except KeyError:
         abort(404)
-    return render_template("game_lobby.html", game=game)
+    return render_template("game_lobby.html", game=game, 
+                username=current_user.username)
 
 @games.route("/game/<int:game_id>")
 @login_required
