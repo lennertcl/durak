@@ -38,7 +38,7 @@ class Card():
     #   Card.HEARTS, Card.CLUBS, Card.DIAMONDS, Card.CLUBS
     # @param symbol
     #   The symbol/number of the card
-    #   Card.TWO, Card.TEN, Card.JACK, Card.QUEEN,
+    #   Card.TWO,.., Card.TEN, Card.JACK, Card.QUEEN,
     #   Card.KING, Card.ACE
     def __init__(self, suit, symbol):
         self.suit = suit
@@ -195,9 +195,9 @@ class DurakGame():
         lowest_trump = Card.ACE + 1
         for player in self.players:
             for card in player.cards:
-                if card.suit == self.trump:
-                    if card.symbol < lowest_trump:
-                        starting_player = player
+                if (card.suit == self.trump and
+                    card.symbol < lowest_trump):
+                    starting_player = player
         self.current_player = starting_player
         
 
