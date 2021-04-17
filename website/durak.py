@@ -129,9 +129,29 @@ class Player():
         self.username = username
         self.cards = []
 
+    def __repr__(self):
+        return "Player {}".format(self.username)
+
+    def __str__(self):
+        return "{}".format(self.username)
+
     # Add the given cards to the player's cards
+    # @param new_cards
+    #   List of cards to add
     def add_cards(self, new_cards):
         self.cards += new_cards
+
+    # Remove the given cards from the player's
+    # cards
+    # @param cards
+    #   List of cards to remove
+    def remove_cards(self, cards):
+        for card in cards:
+            self.cards.remove(card)
+
+    # Get the amount of cards of this player
+    def get_card_count(self):
+        return len(self.cards)
 
 
 # Class representing a game of Durak
@@ -144,7 +164,7 @@ class DurakGame():
     #   The name given to the game
     # @param lowest_card
     #   Like Deck.__init__ lowest_card
-    def __init__(self, id, name, lowest_card):
+    def __init__(self, id, name, lowest_card=2):
         self.id = id
         self.name = name
         self.deck = Deck(lowest_card)
@@ -152,6 +172,7 @@ class DurakGame():
         self.players = [] # The players currently playing
         self.trump = None
         self.current_player = None
+        self.table_cards = [] # The cards currently on the table
 
     # Return the number of players in the lobby
     def get_lobby_count(self):
@@ -180,6 +201,8 @@ class DurakGame():
     # @param cards_per_player
     #   Initial amount of cards per player
     def start_game(self, cards_per_player=6):
+        self.cards_per_player = cards_per_player
+
         # Transfer players from the lobby
         self.players += self.lobby
         self.lobby = []
@@ -194,9 +217,9 @@ class DurakGame():
         #Distribute the cards
         for player in self.players:
             cards = [self.deck.cards.pop() 
-                     for _ in range(cards_per_player)]
+                    for _ in range(cards_per_player)]
             player.add_cards(cards)
-        
+
         #Get the trump card and set the trump of the game
         self.trump_card = self.deck.cards.pop()
         self.trump = self.trump_card.get_suit()
@@ -210,7 +233,53 @@ class DurakGame():
                     card.symbol < lowest_trump):
                     starting_player = player
         self.current_player = starting_player
-        
+
+    # When the round is finished, as long as there
+    # are cards in the deck, every player gets 
+    # back up to the starting amount of cards
+    # The current player is set to the next player
+    def finish_round(self):
+        player = self.current_player
+        done = False
+        while not done:
+            while (player.get_card_count() < self.cards_per_player and self.deck):
+                player.cards.append(self.deck.cards.pop())
+            player = self.next_player(player)
+            done = player == self.current_player
+        self.current_player = self.next_player(self.current_player)
+
+
+    # Player throws cards on table:
+    # Remove the given cards from the player's
+    # current cards and add the cards to the
+    # cards on the table
+    # @param player
+    #   Player to remove cards of
+    # @param cards
+    #   List of cards to remove
+    def throw_cards(self, player, cards):
+        player.remove_cards(cards)
+        self.table_cards += cards
+
+    # Player takes the cards on table:
+    # Add the given cards to the player's current cards
+    # and clear the table
+    # @param player
+    #   Player to add cards to
+    def take_cards(self, player):
+        player.cards += self.table_cards
+        self.table_cards = []
+
+    # Player breaks the cards on the table:
+    # Clear the table
+    def break_cards(self):
+        self.table_cards = []
+
+    # Return the player playing after the given player
+    def next_player(self, player):
+        idx = self.players.index(player)
+        return self.players[(idx + 1) % len(self.players)]
+
 
 # Class to manage current games for the site
 class GameManager():
