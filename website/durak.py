@@ -170,6 +170,7 @@ class DurakGame:
     # @param lowest_card
     #   Like Deck.__init__ lowest_card
     def __init__(self, id, name, lowest_card=2):
+        self.cards_per_player = 0
         self.id = id
         self.name = name
         self.deck = Deck(lowest_card)
@@ -178,6 +179,7 @@ class DurakGame:
         self.trump = None
         self.current_player = None
         self.table_cards = {} # The cards currently on the table
+        self.trump_card = None
 
     # Return the number of players in the lobby
     def get_lobby_count(self):
@@ -248,7 +250,7 @@ class DurakGame:
         player = self.current_player
         done = False
         while not done:
-            while (player.get_card_count() < self.cards_per_player and self.deck):
+            while player.get_card_count() < self.cards_per_player and self.deck:
                 player.cards.append(self.deck.cards.pop())
             player = self.next_player(player)
             done = player == self.current_player
@@ -260,13 +262,13 @@ class DurakGame:
     #@param top_card
     #   the card that breaks the bottom card
     def break_card(self, bottom_card, top_card):
-    try:
-        assert bottom_card in list(self.table_cards.keys()) and (self.table_cards.get(bottom_card) is None):
-        newdict = {bottom_card: top_card}
-        self.table_card.update(newdict)
-        sel.current_player.remove_cards([top_card])
-    except AssertionError:
-        print("Bottom card not on table or card already broken")
+        try:
+            assert bottom_card in list(self.table_cards.keys()) and (self.table_cards.get(bottom_card) is None)
+            newdict = {bottom_card: top_card}
+            self.table_cards.update(newdict)
+            self.current_player.remove_cards([top_card])
+        except AssertionError:
+            print("Bottom card not on table or card already broken")
         
     # Player throws cards on table:
     # Remove the given cards from the player's
@@ -279,7 +281,7 @@ class DurakGame:
     def throw_cards(self, player, cards):
         player.remove_cards(cards)
         for card in cards:
-            self.table_cards[card] = None
+            self.table_cards[card] = None
 
     # Player takes the cards on table:
     # Add the given cards to the player's current cards
@@ -295,10 +297,10 @@ class DurakGame:
     # Clear the table
     def break_cards(self):
         try:
-            assert can_break():
+            assert self.can_break()
             self.table_cards.clear()
             self.finish_round()
-        except AsserttionError:
+        except AssertionError:
             print("not all cards are broken")
     
     #checks if a set of the played cards can break the cards on table
