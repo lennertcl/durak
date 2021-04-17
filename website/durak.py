@@ -1,7 +1,8 @@
 from random import shuffle
 
+
 # Class representing a playing card
-class Card():
+class Card:
     # Constants representing suits
     #   'H' for hearts, 'D' for diamonds,
     #   'C' for clubs, 'S' for spades
@@ -95,7 +96,7 @@ class Card():
 
 
 # Class representing a deck of cards
-class Deck():
+class Deck:
 
     # Initialize a deck of cards with symbols
     # greater than or equal to the given lowest
@@ -117,10 +118,14 @@ class Deck():
     # Shuffle the deck
     def shuffle(self):
         shuffle(self.cards)
+        
+    #add a card to the bottom of the deck
+    def add_card(self, card):
+        self.cards.insert(0, card)
 
 
 # Class representing a player of the game
-class Player():
+class Player:
 
     # Initialize a player
     # @param username
@@ -155,7 +160,7 @@ class Player():
 
 
 # Class representing a game of Durak
-class DurakGame():
+class DurakGame:
 
     # Initialize a game
     # @param id
@@ -172,7 +177,7 @@ class DurakGame():
         self.players = [] # The players currently playing
         self.trump = None
         self.current_player = None
-        self.table_cards = [] # The cards currently on the table
+        self.table_cards = {} # The cards currently on the table
 
     # Return the number of players in the lobby
     def get_lobby_count(self):
@@ -223,6 +228,7 @@ class DurakGame():
         #Get the trump card and set the trump of the game
         self.trump_card = self.deck.cards.pop()
         self.trump = self.trump_card.get_suit()
+        self.deck.add_card(self.trump_card)
 
         # Pick the first player (has lowest trump card)
         starting_player = self.players[0]
@@ -247,8 +253,21 @@ class DurakGame():
             player = self.next_player(player)
             done = player == self.current_player
         self.current_player = self.next_player(self.current_player)
-
-
+    
+    #break a card on table that is not yet broken
+    #@param bottom_card
+    #   the to be broken card on the table
+    #@param top_card
+    #   the card that breaks the bottom card
+    def break_card(self, bottom_card, top_card):
+    try:
+        assert bottom_card in list(self.table_cards.keys()) and (self.table_cards.get(bottom_card) is None):
+        newdict = {bottom_card: top_card}
+        self.table_card.update(newdict)
+        sel.current_player.remove_cards([top_card])
+    except AssertionError:
+        print("Bottom card not on table or card already broken")
+        
     # Player throws cards on table:
     # Remove the given cards from the player's
     # current cards and add the cards to the
@@ -259,7 +278,8 @@ class DurakGame():
     #   List of cards to remove
     def throw_cards(self, player, cards):
         player.remove_cards(cards)
-        self.table_cards += cards
+        for card in cards:
+            self.table_cards[card] = None
 
     # Player takes the cards on table:
     # Add the given cards to the player's current cards
@@ -267,14 +287,45 @@ class DurakGame():
     # @param player
     #   Player to add cards to
     def take_cards(self, player):
-        player.cards += self.table_cards
-        self.table_cards = []
+        player.cards += self.table_cards.keys()
+        self.table_cards.clear()
+        self.finish_round()
 
     # Player breaks the cards on the table:
     # Clear the table
     def break_cards(self):
-        self.table_cards = []
+        try:
+            assert can_break():
+            self.table_cards.clear()
+            self.finish_round()
+        except AsserttionError:
+            print("not all cards are broken")
+    
+    #checks if a set of the played cards can break the cards on table
+    def can_break(self):
+        breakable = True
+        for i in self.table_cards.items():
+            if i[1] is None:
+                breakable = False
+                break
+            #legal way of breaking, may be removed to allow cheating
+            elif not self.is_trump(i[1]):
+                if (i[0].get_suit() != i[1].get_suit()) or (i[0].__lt__(i[1])):
+                    breakable = False
+                    break
+        return breakable
 
+    #checks if a card is a trump
+    def is_trump(self, card):
+        return card.get_suit() == self.trump
+    
+    #pass on the cards with a given cards of the players own cards
+    def pass_on(self, cards):
+        for card in cards:
+            self.table_cards[card] = None
+        self.current_player.remove_cards([cards])
+        self.current_player = self.next_player(self.current_player)
+    
     # Return the player playing after the given player
     def next_player(self, player):
         idx = self.players.index(player)
@@ -282,7 +333,7 @@ class DurakGame():
 
 
 # Class to manage current games for the site
-class GameManager():
+class GameManager:
 
     MAX_ID = 10000
 
