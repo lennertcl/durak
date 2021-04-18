@@ -123,6 +123,10 @@ class Deck:
     def add_card(self, card):
         self.cards.insert(0, card)
 
+    # Test whether the deck is empty
+    def is_empty(self):
+        return self.get_card_count() == 0
+
 
 # Class representing a player of the game
 class Player:
@@ -242,11 +246,24 @@ class DurakGame:
                     starting_player = player
         self.current_player = starting_player
 
-    # When the round is finished, as long as there
-    # are cards in the deck, every player gets 
-    # back up to the starting amount of cards
+    # If the deck is not empty, new cards are distributed
+    # If the deck is empty, players that are finished are
+    # transfered to the lobby
     # The current player is set to the next player
     def finish_round(self):
+        if not(self.deck.is_empty()):
+            self.distribute_new_cards()
+        # No else: need to check again because
+        # the deck might have become empty
+        if self.deck.is_empty():
+            self.transfer_finished_players()
+        # Update the current player
+        self.current_player = self.next_player(self.current_player)
+
+    # As long as there are cards in the deck, every
+    # player gets back up to the starting amount of
+    # cards
+    def distribute_new_cards(self):
         player = self.current_player
         done = False
         while not done:
@@ -254,7 +271,15 @@ class DurakGame:
                 player.cards.append(self.deck.cards.pop())
             player = self.next_player(player)
             done = player == self.current_player
-        self.current_player = self.next_player(self.current_player)
+    
+    # Players that don't have any cards left are transfered
+    # to the lobby
+    def transfer_finished_players(self):
+        # TODO this does not work
+        for player in self.players:
+            if player.get_card_count() == 0:
+                self.players.remove(player)
+                self.lobby.append(player)
     
     #break a card on table that is not yet broken
     #@param bottom_card
@@ -332,6 +357,10 @@ class DurakGame:
     def next_player(self, player):
         idx = self.players.index(player)
         return self.players[(idx + 1) % len(self.players)]
+
+    # Test whether the game is finished
+    def is_finished(self):
+        return self.get_player_count() == 1
 
 
 # Class to manage current games for the site
