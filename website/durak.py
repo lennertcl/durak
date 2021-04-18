@@ -312,7 +312,7 @@ class DurakGame:
                 break
             #legal way of breaking, may be removed to allow cheating
             elif not self.is_trump(i[1]):
-                if (i[0].get_suit() != i[1].get_suit()) or (i[0].__lt__(i[1])):
+                if (i[0].get_suit() != i[1].get_suit()) or (i[0] < i[1]):
                     breakable = False
                     break
         return breakable
