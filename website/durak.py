@@ -315,8 +315,8 @@ class DurakGame:
     # and clear the table
     # @param player
     #   Player to add cards to
-    def take_cards(self, player):
-        player.cards += self.table_cards.keys()
+    def take_cards(self):
+        self.current_player.addcards(self.table_cards.keys())
         self.table_cards.clear()
         self.finish_round()
 

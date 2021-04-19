@@ -50,10 +50,7 @@ def throw_cards(data):
 def take_cards():
     room = session.get("room")
     game = gameManager.current_games[room]
-    # TODO player probably doesnt matter because
-    # it is always the current player who takes
-    player = game.get_player(session.get("username"))
-    game.take_cards(player)
+    game.take_cards()
     event = {"event": "takecards"}
     emit('move', event, room=room)
 
