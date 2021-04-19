@@ -36,7 +36,7 @@
                     {{ game.deck.get_card_count() }}
                 </p>
             </div>
-            <div class="cards">
+            <div class="cards" id="owncards">
                 {% for card in player.cards %}
                     <img class="card"
                         src="{{ url_for('static', filename='images/' + card.get_image()) }}"

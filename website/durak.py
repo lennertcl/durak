@@ -275,11 +275,13 @@ class DurakGame:
     # Players that don't have any cards left are transfered
     # to the lobby
     def transfer_finished_players(self):
-        # TODO this does not work
+        new_players = []
         for player in self.players:
             if player.get_card_count() == 0:
-                self.players.remove(player)
                 self.lobby.append(player)
+            else:
+                new_players.append(player)
+        self.players = new_players
     
     #break a card on table that is not yet broken
     #@param bottom_card

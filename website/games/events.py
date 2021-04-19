@@ -7,14 +7,18 @@ from website import socketio, gameManager
 def join(data):
     room = session.get("room")
     join_room(room)
-    emit('status', {"event": "joined", "username": session.get("username")}, room=room)
+    event = {"event": "joined",
+             "username": session.get("username")}
+    emit('status', event, room=room)
 
 # Event when a user leaves a room
 @socketio.on("leave")
 def leave(data):
     room = session.get("room")
     leave_room(room)
-    emit('status', {"event": "left", "username": session.get("username")}, room=room)
+    event = {"event": "left",
+             "username": session.get("username")}
+    emit('status', event, room=room)
 
 # Event when a user clicks start game button
 @socketio.on("startgame")
@@ -22,41 +26,67 @@ def start_game(data):
     room = session.get("room")
     game = gameManager.current_games[room]
     game.start_game()
-    emit('status', {"event": "startgame", "username": session.get("username")}, room=room)
+    event = {"event": "startgame",
+             "username": session.get("username")}
+    emit('status', event, room=room)
 
-@socketio.on("throwcard")
-def throw_card(cards):
+# Event when a user throws cards
+@socketio.on("throwcards")
+def throw_cards(data):
     room = session.get("room")
     game = gameManager.current_games[room]
     player = game.get_player(session.get("username"))
+    # TODO translate data["cards"] to card objects
+    # before throwing them from the game
+    cards = None
     game.throw_cards(player, cards)
-    emit('move', {"event": "throwcard", "username": session.get("username")}, room=room)
+    event = {"event": "throwcards",
+             "player": player.username,
+             "cards": data["cards"]}
+    emit('move', event, room=room)
 
+# Event when a user takes cards
 @socketio.on("takecards")
 def take_cards():
     room = session.get("room")
     game = gameManager.current_games[room]
+    # TODO player probably doesnt matter because
+    # it is always the current player who takes
     player = game.get_player(session.get("username"))
     game.take_cards(player)
-    emit('move', {"event": "takecards", "username": session.get("username")}, room=room)
+    event = {"event": "takecards"}
+    emit('move', event, room=room)
 
+# Event when a player breaks all cards
 @socketio.on("breakcards")
 def take_cards():
     room = session.get("room")
     game = gameManager.current_games[room]
     game.break_cards()
-    emit('move', {"event": "breakcards", "username": session.get("username")}, room=room)
+    event = {"event": "breakcards"}
+    emit('move', event, room=room)
 
+# Event when a player places a top card on
+# another card to break
 @socketio.on("breakcard")
-def break_card(bottomcard,topcard):
+def break_card(data):
     room = session.get("room")
     game = gameManager.current_games[room]
+    bottomcard = data["bottomcard"]
+    topcard = data["topcard"]
+    # TODO translate to card object
     game.break_card(bottomcard,topcard)
-    emit('move', {"event": "breakcard", "username": session.get("username")}, room=room)
+    event = {"event": "breakcard",
+             "bottomcard": bottomcard,
+             "topcard": topcard}
+    emit('move', event, room=room)
 
+# Event when a user passes cards to other players
 @socketio.on("passcards")
 def pass_cards(cards):
     room = session.get("room")
     game = gameManager.current_games[room]
     game.pass_on(cards)
-    emit('move', {"event": "passcards", "username": session.get("username")}, room=room)
+    event = {"event": "passcards", 
+             "username": session.get("username")}
+    emit('move', event, room=room)
