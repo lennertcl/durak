@@ -37,7 +37,6 @@ def lobby(game_id):
         return redirect(url_for("games.join", game_id=game_id))
     try:
         game = gameManager.current_games[game_id]
-        print(game.players)
     except KeyError:
         abort(404)
     return render_template("game_lobby.html", game=game, 

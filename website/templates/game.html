@@ -5,9 +5,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 <!-- Custom SocketIO JS-->
 <script src="{{ url_for('static', filename='js/socketio.js') }}"></script>
-<!-- Get username -->
+<!-- Set useful variables -->
 <script type="text/javascript">
     const username = `{{ username }}`;
+    const image_dir = `{{ url_for('static', filename='images/') }}`
 </script>
 
 <h1>Game: {{ game.name }}</h1>
@@ -16,6 +17,7 @@
 <div class="row">
     <div class="col-md-8">
         <div class="game">
+            <!-- All players in the game -->
             {% for player in game.players %}
                 {% if player.username != username %}
                     <div class="other-player" id="{{ player.username }}">
@@ -27,6 +29,10 @@
                     </div>
                 {% endif %}
             {% endfor %}
+            <!-- The cards to break -->
+            <div class="cards table-cards" id="tablecards"></div>
+            <!-- TODO this should only show up on current player screen -->
+            <button class="btn btn-success" id="breakcards">Break cards</button>
             <div class="cards">
                 <img class="card" id="trumpcard"
                     src="{{ url_for('static', filename='images/' + game.trump_card.get_image()) }}"/>

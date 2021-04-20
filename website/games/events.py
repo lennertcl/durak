@@ -1,6 +1,7 @@
 from flask import session
 from flask_socketio import send, emit, join_room, leave_room
 from website import socketio, gameManager
+from website.durak import Card
 
 # Event when user joins a room
 @socketio.on("join")
@@ -36,9 +37,9 @@ def throw_cards(data):
     room = session.get("room")
     game = gameManager.current_games[room]
     player = game.get_player(session.get("username"))
-    # TODO translate data["cards"] to card objects
-    # before throwing them from the game
-    cards = None
+    # Translate string cards to actual cards
+    cards = [Card.from_str(card_str) for 
+             card_str in data["cards"]]
     game.throw_cards(player, cards)
     event = {"event": "throwcards",
              "player": player.username,
@@ -47,7 +48,7 @@ def throw_cards(data):
 
 # Event when a user takes cards
 @socketio.on("takecards")
-def take_cards():
+def take_cards(data):
     room = session.get("room")
     game = gameManager.current_games[room]
     game.take_cards()
@@ -56,7 +57,7 @@ def take_cards():
 
 # Event when a player breaks all cards
 @socketio.on("breakcards")
-def take_cards():
+def break_cards(data):
     room = session.get("room")
     game = gameManager.current_games[room]
     game.break_cards()
@@ -69,20 +70,22 @@ def take_cards():
 def break_card(data):
     room = session.get("room")
     game = gameManager.current_games[room]
-    bottomcard = data["bottomcard"]
-    topcard = data["topcard"]
-    # TODO translate to card object
+    bottomcard = Card.from_str(data["bottomcard"])
+    topcard = Card.from_str(data["topcard"])
     game.break_card(bottomcard,topcard)
     event = {"event": "breakcard",
-             "bottomcard": bottomcard,
-             "topcard": topcard}
+             "bottomcard": data["bottomcard"],
+             "topcard": data["topcard"]}
     emit('move', event, room=room)
 
 # Event when a user passes cards to other players
 @socketio.on("passcards")
-def pass_cards(cards):
+def pass_cards(data):
     room = session.get("room")
     game = gameManager.current_games[room]
+    # Translate string cards to actual cards
+    cards = [Card.from_str(card_str) for 
+             card_str in data["cards"]]
     game.pass_on(cards)
     event = {"event": "passcards", 
              "username": session.get("username")}

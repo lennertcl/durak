@@ -33,6 +33,14 @@ class Card:
     SYMBOLS = [TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT,
                NINE, TEN, JACK, QUEEN, KING, ACE]
 
+    # Init a card from a string representation
+    @classmethod
+    def from_str(cls, card_str):
+        card_str = card_str.upper().replace("CARD", "")
+        suit = card_str[-1]
+        symbol = int(card_str[:-1])
+        return cls(suit, symbol)
+
     # Init a card
     # @param suit
     #   The suit of the card
@@ -54,6 +62,11 @@ class Card:
     def __str__(self):
         return "{0}{1}".format(self.symbol,
                                self.suit)
+
+    # Equal if both symbol and suit are equal
+    def __eq__(self, other):
+        return (self.symbol == other.symbol and
+                self.suit == other.suit)
 
     # Less than
     # A card is less than another if its symbol is
@@ -80,6 +93,9 @@ class Card:
     # card's symbol
     def __ge__(self, other):
         return self.symbol >= other.symbol
+
+    def __hash__(self):
+        return hash(self.suit) + hash(self.symbol)
     
     #return the suit of the card
     def get_suit(self):
@@ -104,7 +120,7 @@ class Deck:
     # @param lowest_card
     #   Member of Card.SYMBOLS
     #   The lowest card in the deck
-    def __init__(self, lowest_card):
+    def __init__(self, lowest_card=6):
         self.cards = []
         for suit in Card.SUITS:
             for symbol in Card.SYMBOLS:
