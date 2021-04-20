@@ -31,8 +31,10 @@
             {% endfor %}
             <!-- The cards to break -->
             <div class="cards table-cards" id="tablecards"></div>
-            <!-- TODO this should only show up on current player screen -->
+            <!-- this should only show up on current player screen -->
+            {% if game.current_player.username == username %}
             <button class="btn btn-success" id="breakcards">Break cards</button>
+            {% endif %}
             <div class="cards">
                 <img class="card" id="trumpcard"
                     src="{{ url_for('static', filename='images/' + game.trump_card.get_image()) }}"/>
