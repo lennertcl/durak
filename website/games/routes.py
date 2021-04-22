@@ -51,4 +51,5 @@ def game(game_id):
     except KeyError:
         abort(404)
     return render_template('game.html', game=game,
-                username=current_user.username, player=player)
+                player=player,
+                current_player=game.current_player.username)

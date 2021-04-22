@@ -3,8 +3,7 @@
 {% block content %}
 <!-- SocketIO JS-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
-<!-- Custom SocketIO JS-->
-<script src="{{ url_for('static', filename='js/socketio.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lobby.js') }}"></script>
 <!-- Get username -->
 <script type="text/javascript">
     const username = `{{ username }}`;
@@ -17,7 +16,7 @@
 <h2>Players</h2>
 <div id="players_list">
     {% for player in game.lobby + game.players %}
-        <p id="player{{player.username}}">{{ player.username }}</p>
+        <p id="sideplayer{{player.username}}">{{ player.username }}</p>
     {% endfor %}
 </div>
 

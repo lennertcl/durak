@@ -4,11 +4,12 @@
 <!-- SocketIO JS-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 <!-- Custom SocketIO JS-->
-<script src="{{ url_for('static', filename='js/socketio.js') }}"></script>
+<script src="{{ url_for('static', filename='js/game.js') }}"></script>
 <!-- Set useful variables -->
 <script type="text/javascript">
-    const username = `{{ username }}`;
-    const image_dir = `{{ url_for('static', filename='images/') }}`
+    const username = `{{ player.username }}`;
+    const image_dir = `{{ url_for('static', filename='images/') }}`;
+    var current_player = `{{ current_player }}`;
 </script>
 
 <h1>Game: {{ game.name }}</h1>
@@ -19,15 +20,11 @@
         <div class="game">
             <!-- All players in the game -->
             <div id="otherplayers">
-                {% for player in game.players %}
-                    {% if player.username != username %}
-                        <div class="other-player" id="player{{ player.username }}">
-                            {% if player == game.current_player %}
-                                <p class="current-player">{{ player.username }}</p>
-                            {% else %}
-                                <p>{{ player.username }}</p>
-                            {% endif %}
-                            <p id="cardcount{{ player.username }}">{{ player.get_card_count() }}</p>
+                {% for other_player in game.players %}
+                    {% if other_player.username != player.username %}
+                        <div class="other-player" id="player{{ other_player.username }}">
+                            <p>{{ other_player.username }}</p>
+                            <p id="cardcount{{ other_player.username }}">{{ other_player.get_card_count() }}</p>
                         </div>
                     {% endif %}
                 {% endfor %}
@@ -35,7 +32,7 @@
             <!-- The cards to break -->
             <div class="cards table-cards" id="tablecards"></div>
             <!-- This only shows up on current player's screen -->
-            <div id="currentplayerbuttons">
+            <div style="display:none;" id="currentplayerbuttons">
                 <button class="btn btn-success" id="breakcards">Break cards</button>
                 <button class="btn btn-danger" id="takecards">Take cards</button>
             </div>
@@ -63,8 +60,8 @@
                 src="{{ url_for('static', filename='images/' + game.trump_card.get_image()) }}"/>
         <h2>Players</h2>
         <div id="players_list">
-            {% for player in game.players %}
-                <p id="sideplayer{{player.username}}">{{ player.username }}</p>
+            {% for other_player in game.players %}
+                <p id="sideplayer{{other_player.username}}">{{ other_player.username }}</p>
             {% endfor %}
         </div>
 

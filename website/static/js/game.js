@@ -4,33 +4,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const own_cards = document.getElementById('owncards');
     const table_cards = document.getElementById('tablecards');
     const current_player_buttons = document.getElementById('currentplayerbuttons');
+    // Execute once on startup
+    on_startgame();
 
-    // When user leaves the game
+
+    // When user connects to the game
     socket.on('connect', () => {
         socket.emit('join', {"username": username});
     });
 
-    // Update player list when players join or leave
-    // Redirect when someone clicks start game
-    // TODO move to functions on_join_game, on_leave_game, on_start_game
+    // Events when something changes to game status
     socket.on('status', data => {
-        if (data.event == 'joined'){
-            p = document.getElementById("player" + data.username);
-            if (!p){
-                const p = document.createElement('p');
-                p.innerHTML = data.username;
-                p.id = "player" + data.username;
-                document.querySelector('#players_list').append(p);
-            }
-        }
-        else if (data.event == 'left'){
-            p = document.getElementById("player" + data.username);
-            document.querySelector('#players_list').removeChild(p);
-        }
-        else if (data.event == 'startgame'){
-            window.location.href = game_url;
-            // TODO set information given by startgame event
-            // eg currentplayer = data.currentplayer
+        switch(data.event){
+            case 'joined':
+                on_join(data);
+            break;
+            case 'left':
+                on_left(data);
+            break;
         }
     });
 
@@ -54,25 +45,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // When user clicks the start game button
-    document.querySelector('#start_button').onclick = () => {
-        socket.emit('startgame', {});
-    };
+    // When user clicks take cards button
+    document.querySelector('#takecards').onclick = () => {
+        takecards();
+    }
+    
+    // When user clicks break cards button
+    document.querySelector('#breakcards').onclick = () => {
+        breakcards();
+    }
 
     // When user clicks the leave button
     document.querySelector('#leave_button').onclick = () => {
         socket.emit('leave', {'username': username});
     };
-
-    // When user clicks the break cards button
-    document.querySelector('#breakcards').onclick = () => {
-        breakcards();
-    }
-
-    // When user clicks the take cards button
-    document.querySelector('#takecards').onclick = () => {
-        takecards();
-    }
 
     // TODO does this need to be reset every time 
     // cards are taken into hands?
@@ -107,12 +93,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
     }
-    
+
+    // When the game starts
+    function on_startgame(){
+        if (current_player == username){
+            on_current_player();
+        }
+    }
+
+    // Some player joins the game
+    function on_join(data){
+        // Add to the player list
+        p = document.getElementById("sideplayer" + data.username);
+        if (!p){
+            const p = document.createElement('p');
+            p.innerHTML = data.username;
+            p.id = "sideplayer" + data.username;
+            document.querySelector('#players_list').append(p);
+        }
+    }
+
+    // Some player leaves the game
+    function on_left(data){
+        // Remove from the player list
+        p = document.getElementById("sideplayer" + data.username);
+        document.querySelector('#players_list').removeChild(p);
+        // TODO remove from the table
+    }
+
     // Some player throws cards on the table
     function on_throwcards(data){
         for(var i = 0; i < data.cards.length; i++){
             const card = document.createElement('img');
             card.src = image_dir + data.cards[i].replace("card", "") + ".png";
+            card.id = data.cards[i];
             card.className = "card";
             table_cards.append(card);
         }
@@ -152,8 +166,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Take cards into hand
     function takecards(){
+        // Let the other players know
         socket.emit('takecards', 
             {'username': username});
+
+        // Show the cards in the hand
+        while(table_cards.hasChildNodes()){
+            own_cards.appendChild(table_cards.removeChild(table_cards.firstChild));
+        }
     }
 
     // Some player breaks the cards
@@ -190,29 +210,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // Change everything after the round is finished
     function on_finish_round(data){
         // Clear all cards from the table
-        table_cards.innerHTML = '';
+        table_cards.children = [];
         // Reload the cards in the player's hand
         // TODO reload the cards
+        // TODO update card count of deck
         selected_cards = [];
 
         // If you were the current player
-        // TODO
-        if (false){
-            on_current_player();
-        }
-        // If you are the new current player:
-        if(data.newplayer == username){
+        if (current_player == username){
             on_not_current_player();
         }
+        // If you are the new current player:
+        else if(data.newplayer == username){
+            on_current_player();
+        }
+
+        // Update the current player
+        current_player = data.newplayer;
+        // Set styling for current player
     }
 
     // When this player becomes the current player
     function on_current_player(){
-        current_player_buttons.display = "block";
+        current_player_buttons.style.display = "block";
     }
 
     // When this player stops being the current player
     function on_not_current_player(){
-        current_player_buttons.display = "none";
+        current_player_buttons.style.display = "none";
     }
 }) 
