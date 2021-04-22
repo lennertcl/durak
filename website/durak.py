@@ -215,6 +215,19 @@ class DurakGame:
             if player.username == username:
                 return player
 
+    # Get the amount of cards currently on the table
+    # Both bottom and top cards are counted
+    def get_table_cards_count(self):
+        count = 0
+        # There is always a bottom card, not always
+        # a top card
+        for _, top_card in self.table_cards.items():
+            if top_card:
+                count += 2
+            else:
+                count += 1
+        return count
+
     # Add a player to the lobby of the game by username
     # @param username
     #   The usename of the player to add
@@ -273,6 +286,9 @@ class DurakGame:
         # the deck might have become empty
         if self.deck.is_empty():
             self.transfer_finished_players()
+        if self.is_finished():
+            # TODO ?
+            pass
         # Update the current player
         self.current_player = self.next_player(self.current_player)
 
@@ -322,6 +338,8 @@ class DurakGame:
     # @param cards
     #   List of cards to remove
     def throw_cards(self, player, cards):
+        # TODO test if can be thrown
+        # if not then the player has cheated
         player.remove_cards(cards)
         for card in cards:
             self.table_cards[card] = None
@@ -332,19 +350,18 @@ class DurakGame:
     # @param player
     #   Player to add cards to
     def take_cards(self):
-        self.current_player.addcards(self.table_cards.keys())
+        self.current_player.add_cards(self.table_cards.keys())
         self.table_cards.clear()
         self.finish_round()
 
     # Player breaks the cards on the table:
     # Clear the table
     def break_cards(self):
-        try:
-            assert self.can_break()
-            self.table_cards.clear()
-            self.finish_round()
-        except AssertionError:
-            print("not all cards are broken")
+        self.table_cards.clear()
+        self.finish_round()
+        if not self.can_break():
+            # TODO this player has cheated
+            print("{} has cheated".format(self.current_player))
     
     #checks if a set of the played cards can break the cards on table
     def can_break(self):

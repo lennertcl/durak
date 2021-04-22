@@ -18,23 +18,27 @@
     <div class="col-md-8">
         <div class="game">
             <!-- All players in the game -->
-            {% for player in game.players %}
-                {% if player.username != username %}
-                    <div class="other-player" id="{{ player.username }}">
-                        {% if player == game.current_player %}
-                            <p class="current-player">{{ player.username }}</p>
-                        {% else %}
-                            <p>{{ player.username }}</p>
-                        {% endif %}
-                    </div>
-                {% endif %}
-            {% endfor %}
+            <div id="otherplayers">
+                {% for player in game.players %}
+                    {% if player.username != username %}
+                        <div class="other-player" id="player{{ player.username }}">
+                            {% if player == game.current_player %}
+                                <p class="current-player">{{ player.username }}</p>
+                            {% else %}
+                                <p>{{ player.username }}</p>
+                            {% endif %}
+                            <p id="cardcount{{ player.username }}">{{ player.get_card_count() }}</p>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
             <!-- The cards to break -->
             <div class="cards table-cards" id="tablecards"></div>
-            <!-- this should only show up on current player screen -->
-            {% if game.current_player.username == username %}
-            <button class="btn btn-success" id="breakcards">Break cards</button>
-            {% endif %}
+            <!-- This only shows up on current player's screen -->
+            <div id="currentplayerbuttons">
+                <button class="btn btn-success" id="breakcards">Break cards</button>
+                <button class="btn btn-danger" id="takecards">Take cards</button>
+            </div>
             <div class="cards">
                 <img class="card" id="trumpcard"
                     src="{{ url_for('static', filename='images/' + game.trump_card.get_image()) }}"/>
@@ -60,7 +64,7 @@
         <h2>Players</h2>
         <div id="players_list">
             {% for player in game.players %}
-                <p id="player{{player.username}}">{{ player.username }}</p>
+                <p id="sideplayer{{player.username}}">{{ player.username }}</p>
             {% endfor %}
         </div>
 

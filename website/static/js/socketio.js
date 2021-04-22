@@ -1,10 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     var socket = io();
     var selected_cards = [];
-    var own_cards = document.getElementById('owncards');
-    var table_cards = document.getElementById('tablecards');
-    var break_cards_button = document.getElementById('breakcards');
-    var other_players = null;
+    const own_cards = document.getElementById('owncards');
+    const table_cards = document.getElementById('tablecards');
+    const current_player_buttons = document.getElementById('currentplayerbuttons');
 
     // When user leaves the game
     socket.on('connect', () => {
@@ -13,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update player list when players join or leave
     // Redirect when someone clicks start game
+    // TODO move to functions on_join_game, on_leave_game, on_start_game
     socket.on('status', data => {
         if (data.event == 'joined'){
             p = document.getElementById("player" + data.username);
@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         else if (data.event == 'startgame'){
             window.location.href = game_url;
+            // TODO set information given by startgame event
+            // eg currentplayer = data.currentplayer
         }
     });
 
@@ -64,7 +66,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // When user clicks the break cards button
     document.querySelector('#breakcards').onclick = () => {
-        socket.emit('breakcards', {});
+        breakcards();
+    }
+
+    // When user clicks the take cards button
+    document.querySelector('#takecards').onclick = () => {
+        takecards();
     }
 
     // TODO does this need to be reset every time 
@@ -83,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // When user clicks the cards on the table
     table_cards.onclick = (event) => {
-        // TODO where should user click to add cards
         let target = event.target;
         if(target.id == table_cards.id){
             // User throws new cards onto table
@@ -129,6 +135,21 @@ document.addEventListener('DOMContentLoaded', () => {
         selected_cards = [];
     }
 
+    // Some player takes cards into his hand
+    function on_takecards(data){
+        // Add the number of cards to the taking 
+        // player's number of cards
+        if(data.player != username){
+            // Only if it's another player
+            var count = document.getElementById('cardcount' + data.player);
+            count.innerHTML = parseInt(count.innerHTML)
+                            + parseInt(data.cardcount);
+        }
+        // The round is finished when a player
+        // takes the cards
+        on_finish_round(data);
+    }
+
     // Take cards into hand
     function takecards(){
         socket.emit('takecards', 
@@ -137,8 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Some player breaks the cards
     function on_breakcards(data){
-        // Clear all cards from the table
-        table_cards.innerHTML = '';
+        // Nothing else happens
+        on_finish_round(data);
     }
 
     // Take cards into hand
@@ -164,5 +185,34 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(selected_cards[0]).remove();
         // Clear the selected cards
         selected_cards = [];
+    }
+
+    // Change everything after the round is finished
+    function on_finish_round(data){
+        // Clear all cards from the table
+        table_cards.innerHTML = '';
+        // Reload the cards in the player's hand
+        // TODO reload the cards
+        selected_cards = [];
+
+        // If you were the current player
+        // TODO
+        if (false){
+            on_current_player();
+        }
+        // If you are the new current player:
+        if(data.newplayer == username){
+            on_not_current_player();
+        }
+    }
+
+    // When this player becomes the current player
+    function on_current_player(){
+        current_player_buttons.display = "block";
+    }
+
+    // When this player stops being the current player
+    function on_not_current_player(){
+        current_player_buttons.display = "none";
     }
 }) 

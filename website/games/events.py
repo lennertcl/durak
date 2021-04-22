@@ -27,6 +27,8 @@ def start_game(data):
     room = session.get("room")
     game = gameManager.current_games[room]
     game.start_game()
+    # TODO pass necessary elements of the game
+    # with the event: eg current player
     event = {"event": "startgame",
              "username": session.get("username")}
     emit('status', event, room=room)
@@ -51,8 +53,12 @@ def throw_cards(data):
 def take_cards(data):
     room = session.get("room")
     game = gameManager.current_games[room]
+    count = game.get_table_cards_count()
+    print(count)
     game.take_cards()
-    event = {"event": "takecards"}
+    event = {"event": "takecards",
+             "player": data["username"],
+             "cardcount": count}
     emit('move', event, room=room)
 
 # Event when a player breaks all cards
@@ -88,5 +94,6 @@ def pass_cards(data):
              card_str in data["cards"]]
     game.pass_on(cards)
     event = {"event": "passcards", 
-             "username": session.get("username")}
+             "username": session.get("username"),
+             "newplayer": game.current_player.username}
     emit('move', event, room=room)
