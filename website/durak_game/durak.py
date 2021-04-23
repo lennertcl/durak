@@ -60,6 +60,10 @@ class DurakGame:
             player = Player(username)
             self.lobby.append(player)
 
+
+    # GAME AND ROUNDS
+
+
     # Start a game of durak
     # @param cards_per_player
     #   Initial amount of cards per player
@@ -197,17 +201,35 @@ class DurakGame:
     # @param cards
     #   List of cards to remove
     def throw_cards(self, player, cards):
-        # TODO test if can be thrown
-        # if not then the player has cheated
+        if not(self.is_possible_throw_cards(cards)):
+            raise AssertionError("Too much cards thrown")
+        if not self.is_legal_throw_cards(player, cards):
+            # TODO the player has cheated
+            pass
         player.remove_cards(cards)
         for card in cards:
             self.table_cards[card] = None
 
+    # It is not possible to throw more cards if the
+    # player doesn't have enough cards to break them
+    def is_possible_throw_cards(self, cards):
+        cards_to_break = sum([1 for card in self.table_cards
+                              if card]) + len(cards)
+        return (cards_to_break
+                <= self.current_player.get_card_count())
+
     # Test whether the given player can throw the
     # given cards without cheating
+    # The player has to be one of the neighbors of
+    # the current player and the symbol of each card 
+    # to be thrown has to be present already
+    # TODO first move of round
     def is_legal_throw_cards(self, player, cards):
-        # TODO
-        pass
+        for card in cards:
+            if card not in self.table_cards:
+                return False
+        return (self.next_player(current_player) == player or
+                self.prev_player(current_player) == player)
 
 
     # TAKING CARDS
@@ -216,8 +238,6 @@ class DurakGame:
     # Player takes the cards on table:
     # Add the given cards to the player's current cards
     # and clear the table
-    # @param player
-    #   Player to add cards to
     def take_cards(self):
         cards = []
         for bottom, top in self.table_cards.items():
@@ -232,18 +252,53 @@ class DurakGame:
     # PASSING ON
 
 
-    #pass on the cards with a given cards of the players own cards
+    #pass on the cards with given cards of the players own cards
     def pass_on(self, cards):
+        if not self.is_possible_pass_on(cards):
+            raise AssertionError("Impossible pass on")
         for card in cards:
             self.table_cards[card] = None
-        self.current_player.remove_cards([cards])
+        self.current_player.remove_cards(cards)
         self.current_player = self.next_player(self.current_player)
+
+    # Pass on the cards making use of the trump card, without
+    # passing on the trump card
+    def pass_on_using_trump(self):
+        if not self.is_possible_pass_on([]):
+            raise AssertionError("Impossible pass on")
+        self.current_player = self.next_player(self.current_player)
+
+    # The amount of cards passed should not exceed the
+    # amount of cards of the player passing to
+    # There should be no top cards when passing on
+    def is_possible_pass_on(self, cards):
+        if (len(cards) + self.get_table_cards_count() >
+           self.next_player(self.current_player).get_card_count()):
+            return False
+        return all(card is None for card in self.table_cards.values())
 
     # Test whether the current player can pass on the cards
     # to the next player without cheating
-    def is_legal_pass_on(self):
-        # TODO
-        pass
+    # The given cards and the cards on the table should all
+    # be cards with the same symbol
+    # There should be no broken cards
+    def is_legal_pass_on(self, cards):
+        symbol = cards[0].symbol
+        return (all(card.symbol == symbol for card in cards) and
+                all(bottom_card.symbol == symbol and top_card is None 
+                for bottom_card, top_card in self.table_cards))
+
+    # Test whether the current player can pas on the cards
+    # to the next player using the trump card without cheating
+    # All cards on the table should have the same symbol and
+    # the current player should have the trump card of this
+    # symbol
+    def is_legal_pass_on_using_trump(self):
+        if not self.table_cards:
+            return False
+        symbol = self.table_cards.keys()[0].symbol
+        return all(bottom_card.symbol == symbol and top_card is None 
+               for bottom_card, top_card in self.table_cards)
 
 
     # HELPER FUNCTIONS
@@ -260,8 +315,8 @@ class DurakGame:
 
     # Return the player playing before the given player
     def prev_player(self, player):
-        # TODO
-        pass
+        idx = self.players.index(player)
+        return self.players[idx - 1]
 
     # Test whether the game is finished
     def is_finished(self):

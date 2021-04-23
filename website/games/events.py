@@ -3,6 +3,8 @@ from flask_socketio import send, emit, join_room, leave_room
 from website import socketio, gameManager
 from website.durak_game.card import Card
 
+# TODO prevent users from doing impossible stuff
+
 # Event when user joins a room
 @socketio.on("join")
 def join(data):
@@ -93,5 +95,16 @@ def pass_cards(data):
     game.pass_on(cards)
     event = {"event": "passcards", 
              "username": session.get("username"),
+             "newplayer": game.current_player.username,
+             "cards": data["cards"]}
+    emit('move', event, room=room)
+
+# Event when a user passed cards using trump
+@socketio.on("passtrump")
+def pass_trump(data):
+    room = session.get("room")
+    game = gameManager.current_games[room]
+    game.pass_on_using_trump()
+    event = {"event": "passtrump", 
              "newplayer": game.current_player.username}
     emit('move', event, room=room)

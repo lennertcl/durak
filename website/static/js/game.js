@@ -40,8 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'breakcard':
                 on_breakcard(data);
             break;
-            case 'passcard':
-                on_passcard(data);
+            case 'passcards':
+                on_passcards(data);
+            break;
+            case 'passtrump':
+                on_passtrump(data);
         }
     });
     
@@ -55,6 +58,17 @@ document.addEventListener('DOMContentLoaded', () => {
         breakcards();
     }
 
+    // When user clicks pass using cards button
+    document.querySelector('#passcards').onclick = () => {
+        console.log("test");
+        passcards();
+    }
+
+    // When user clicks pass using cards button
+    document.querySelector('#passtrump').onclick = () => {
+        passtrump();
+    }
+
     // When user clicks the leave button
     document.querySelector('#leave_button').onclick = () => {
         socket.emit('leave', {'username': username});
@@ -65,27 +79,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // When user clicks a card
     own_cards.onclick = (event) => {
         let target = event.target;
-        // TODO add some styling to card if selected
+        // TODO fix border bug
         if (selected_cards.includes(target.id)){
             // Unselect card if already selected
             selected_cards.filter((value, index, arr) => value != target.id);
+            target.style.border = '2px solid #555';
         }else{
             selected_cards.push(target.id);
+            target.style.border = 'none';
         }
     }
 
     // When user clicks the cards on the table
     table_cards.onclick = (event) => {
         let target = event.target;
-        if(target.id == table_cards.id && current_player != username){
+        if(target.id == table_cards.id){
             // User throws new cards onto table
-            // Only if the user is not the current player
-            throwcards();
+            if(current_player != username){
+                // Only other players can throw cards
+                throwcards();
+            }
         }
         else{
             if (selected_cards.length == 1){
                 // You can only throw 1 card on top of other card
-                // TODO if the player is not the current player he cheated
                 breakcard(target.id);
             }
             else{
@@ -227,6 +244,45 @@ document.addEventListener('DOMContentLoaded', () => {
         selected_cards = [];
     }
 
+    // User passes cards using extra cards
+    function passcards(){
+        // TODO if no cards?
+        socket.emit('passcards', {'cards': selected_cards});
+        // Remove the cards from your hand
+        for(var i = 0; i < selected_cards.length; i++){
+            var card = document.getElementById(selected_cards[i]);
+            card.remove();
+        }
+        // Clear the selected cards
+        selected_cards = [];
+    }
+
+    // Some player passed using cards
+    function on_passcards(data){
+        // Add the cards to the table
+        for(var i = 0; i < data.cards.length; i++){
+            // Create a new bottom-top card pair
+            const pair = document.createElement('div');
+            pair.className = "table-card-pair";
+            // Set the bottom card to the thrown card
+            const card = make_card(data.cards[i]);
+            card.className = "card bottom-card";
+            pair.append(card);
+            table_cards.append(pair);
+        }
+        update_current_player(data.newplayer);
+    }
+
+    // User passes cards using his trump card
+    function passtrump(){
+        socket.emit('passtrump', {});
+    }
+
+    // Some player passed using trump
+    function on_passtrump(data){
+        update_current_player(data.newplayer);
+    }
+
     // Change everything after the round is finished
     function on_finish_round(data){
         // Clear all cards from the table
@@ -237,18 +293,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // TODO reload the cards
         // TODO update card count of deck
 
+        update_current_player(data.newplayer);
+    }
+
+    function update_current_player(new_player){
         // If you were the current player
         if (current_player == username){
             on_not_current_player();
         }
         // If you are the new current player:
-        else if(data.newplayer == username){
+        else if(new_player == username){
             on_current_player();
         }
-
         // Update the current player
-        current_player = data.newplayer;
-        // Set styling for current player
+        current_player = new_player;
+        // TODO Set styling for current player
     }
 
     // When this player becomes the current player
