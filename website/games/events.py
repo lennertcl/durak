@@ -1,7 +1,7 @@
 from flask import session
 from flask_socketio import send, emit, join_room, leave_room
 from website import socketio, gameManager
-from website.durak import Card
+from website.durak_game.card import Card
 
 # Event when user joins a room
 @socketio.on("join")

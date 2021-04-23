@@ -5,7 +5,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_socketio import SocketIO
 from website.config import Config
-from website.durak import GameManager
+from website.durak_game.game_manager import GameManager
 
 
 db = SQLAlchemy()
