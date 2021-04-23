@@ -30,7 +30,18 @@
                 {% endfor %}
             </div>
             <!-- The cards to break -->
-            <div class="cards table-cards" id="tablecards"></div>
+            <div class="cards table-cards" id="tablecards">
+                {% for bottom_card, top_card in game.table_cards.items() %}
+                    <div class="table-card-pair">
+                        <img class="card bottom-card" id="card{{ bottom_card }}"
+                            src="{{ url_for('static', filename='images/' + bottom_card.get_image()) }}"/>
+                        {% if top_card %}
+                            <img class="card top-card" id="card{{ top_card }}"
+                                src="{{ url_for('static', filename='images/' + top_card.get_image()) }}"/>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
             <!-- This only shows up on current player's screen -->
             <div style="display:none;" id="currentplayerbuttons">
                 <button class="btn btn-success" id="breakcards">Break cards</button>

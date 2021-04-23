@@ -4,19 +4,39 @@
     background-color:darkgreen;
 }
 
+/* Any card */
 .card{
     width:65px;
     height:100px;
 }
 
+/* Group of cards together */
 .cards{
     margin-bottom: 0;
     display: flex;
 }
 
+/* Cards currently on the table */
 .table-cards{
     background-color:darkslategray;
-    height:110px;
+    height:140px;
+}
+
+/* Div that contains bottom card and top card to stack */
+.table-card-pair{
+    position:relative;
+    width:65px;
+    height: 130px;
+}
+
+.bottom-card{
+    position:absolute;
+    top:0;
+}
+
+.top-card{
+    position:absolute;
+    bottom:0;
 }
 
 .other-player{

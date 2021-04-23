@@ -350,7 +350,12 @@ class DurakGame:
     # @param player
     #   Player to add cards to
     def take_cards(self):
-        self.current_player.add_cards(self.table_cards.keys())
+        cards = []
+        for bottom, top in self.table_cards.items():
+            cards.append(bottom)
+            if top:
+                cards.append(top)
+        self.current_player.add_cards(cards)
         self.table_cards.clear()
         self.finish_round()
 

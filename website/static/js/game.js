@@ -77,18 +77,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // When user clicks the cards on the table
     table_cards.onclick = (event) => {
         let target = event.target;
-        if(target.id == table_cards.id){
+        if(target.id == table_cards.id && current_player != username){
             // User throws new cards onto table
+            // Only if the user is not the current player
             throwcards();
         }
         else{
-            if (selected_cards.length > 1){
+            if (selected_cards.length == 1){
                 // You can only throw 1 card on top of other card
-                // TODO Show error message to user
+                // TODO if the player is not the current player he cheated
+                breakcard(target.id);
             }
             else{
-                // User throws new card onto other cards
-                breakcard(target.id);
+                // TODO Show error message to user
+                console.log("No cards / more than 1 card selected when breaking");
             }
         }
 
@@ -124,11 +126,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Some player throws cards on the table
     function on_throwcards(data){
         for(var i = 0; i < data.cards.length; i++){
-            const card = document.createElement('img');
-            card.src = image_dir + data.cards[i].replace("card", "") + ".png";
-            card.id = data.cards[i];
-            card.className = "card";
-            table_cards.append(card);
+            // Create a new bottom-top card pair
+            const pair = document.createElement('div');
+            pair.className = "table-card-pair";
+            // Set the bottom card to the thrown card
+            const card = make_card(data.cards[i]);
+            card.className = "card bottom-card";
+            pair.append(card);
+            table_cards.append(pair);
         }
         // TODO animation that cards have been thrown
         // from data.username to table cards
@@ -169,10 +174,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Let the other players know
         socket.emit('takecards', 
             {'username': username});
-
-        // Show the cards in the hand
-        while(table_cards.hasChildNodes()){
-            own_cards.appendChild(table_cards.removeChild(table_cards.firstChild));
+        
+        var pairs = table_cards.getElementsByClassName('table-card-pair');
+        // Add the cards to your hand
+        for(var i = 0; i < pairs.length; i++){
+            // Take bottom and top cards of table
+            // Add to your own cards
+            var cards = pairs[i].getElementsByTagName('img');
+            const bottom_card = make_card(cards[0].id);
+            own_cards.append(bottom_card);
+            if (cards.length == 2){
+                // If there is a top card
+                const top_card = make_card(cards[1].id);
+                own_cards.append(top_card);
+            }
         }
     }
 
@@ -190,7 +205,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Some player breaks a card
     function on_breakcard(data){
-        // TODO put data.topcard on top of data.bottomcard
+        // Get the bottom card on the table
+        var pair = document.getElementById(data.bottomcard).parentElement;
+        // Make the top card and put it on the table
+        const card = make_card(data.topcard);
+        card.className = "card top-card";
+        pair.append(card);
     }
 
     // Break a card: put another card on top of it
@@ -210,11 +230,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Change everything after the round is finished
     function on_finish_round(data){
         // Clear all cards from the table
-        table_cards.children = [];
+        table_cards.innerHTML = '';
         // Reload the cards in the player's hand
+        selected_cards = [];
+
         // TODO reload the cards
         // TODO update card count of deck
-        selected_cards = [];
 
         // If you were the current player
         if (current_player == username){
@@ -238,5 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // When this player stops being the current player
     function on_not_current_player(){
         current_player_buttons.style.display = "none";
+    }
+
+    // Create a card
+    function make_card(card_id){
+        const card = document.createElement('img');
+        card.src = image_dir + card_id.replace("card", "") + ".png";
+        card.id = card_id;
+        card.className = "card";
+        return card;
     }
 }) 
