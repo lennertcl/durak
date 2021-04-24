@@ -34,7 +34,7 @@ class DurakGame:
 
     # Get player by username
     def get_player(self, username):
-        for player in self.players:
+        for player in self.players + self.lobby:
             if player.username == username:
                 return player
 
@@ -228,8 +228,8 @@ class DurakGame:
         for card in cards:
             if card not in self.table_cards:
                 return False
-        return (self.next_player(current_player) == player or
-                self.prev_player(current_player) == player)
+        return (self.next_player(self.current_player) == player or
+                self.prev_player(self.current_player) == player)
 
 
     # TAKING CARDS

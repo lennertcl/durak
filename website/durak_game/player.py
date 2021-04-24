@@ -7,6 +7,8 @@ class Player:
     def __init__(self, username):
         self.username = username
         self.cards = []
+        # This gets set when user joins a game
+        self.sid = None
 
     def __repr__(self):
         return "Player {}".format(self.username)

@@ -20,6 +20,7 @@
 .table-cards{
     background-color:darkslategray;
     height:140px;
+    display: flex;
 }
 
 /* Div that contains bottom card and top card to stack */

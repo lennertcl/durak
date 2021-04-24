@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'left':
                 on_left(data);
             break;
+            case 'finishround':
+                on_finish_round(data);
         }
     });
 
@@ -32,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 on_throwcards(data);
             break;
             case 'takecards':
-                on_takecards(data);
+                on_takecards();
             break;
             case 'breakcards':
                 on_breakcards(data);
@@ -74,19 +76,24 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('leave', {'username': username});
     };
 
-    // TODO does this need to be reset every time 
-    // cards are taken into hands?
-    // When user clicks a card
+    // When user clicks one of their own cards
     own_cards.onclick = (event) => {
         let target = event.target;
-        // TODO fix border bug
+        if (!target.id.includes("card")){
+            // Don't select the div
+            return;
+        }
         if (selected_cards.includes(target.id)){
             // Unselect card if already selected
-            selected_cards.filter((value, index, arr) => value != target.id);
-            target.style.border = '2px solid #555';
+            selected_cards = selected_cards.filter((value, index, arr) => value != target.id);
+            target.style.borderColor = '';
+            target.style.borderStyle = '';
+            target.style.borderWidth = '';
         }else{
             selected_cards.push(target.id);
-            target.style.border = 'none';
+            target.style.borderColor = 'black';
+            target.style.borderStyle = 'solid';
+            target.style.borderWidth = 'medium';
         }
     }
 
@@ -142,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Some player throws cards on the table
     function on_throwcards(data){
+        // Show the cards on the table
         for(var i = 0; i < data.cards.length; i++){
             // Create a new bottom-top card pair
             const pair = document.createElement('div');
@@ -152,8 +160,15 @@ document.addEventListener('DOMContentLoaded', () => {
             pair.append(card);
             table_cards.append(pair);
         }
+        if(username != data.player){
+            // Edit the player's card count
+            var player_count = document.
+                getElementById('cardcount' + data.player);
+            player_count.innerHTML = parseInt(player_count.innerHTML)
+                                        - data.cards.length;
+        }
         // TODO animation that cards have been thrown
-        // from data.username to table cards
+        // from data.player to table cards
     }
 
     // Throw cards into the game
@@ -172,27 +187,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Some player takes cards into his hand
-    function on_takecards(data){
+    function on_takecards(){
         // Add the number of cards to the taking 
         // player's number of cards
-        if(data.player != username){
+        if(current_player != username){
             // Only if it's another player
-            var count = document.getElementById('cardcount' + data.player);
-            count.innerHTML = parseInt(count.innerHTML)
-                            + parseInt(data.cardcount);
+            var player_count = document.
+                getElementById('cardcount' + current_player);
+            var table_card_count = table_cards.
+                getElementsByClassName('table-card-pair').length;
+            player_count.innerHTML = parseInt(player_count.innerHTML)
+                                     + table_card_count;
         }
-        // The round is finished when a player
-        // takes the cards
-        on_finish_round(data);
     }
 
     // Take cards into hand
     function takecards(){
-        // Let the other players know
-        socket.emit('takecards', 
-            {'username': username});
-        
         var pairs = table_cards.getElementsByClassName('table-card-pair');
+        // Prevent the user from pressing take cards before
+        // any cards where thrown
+        if(pairs.length == 0){
+            // TODO message to user
+            console.log("No cards to take yet");
+            return;
+        }
+        // Let the other players know
+        socket.emit('takecards', {});
         // Add the cards to your hand
         for(var i = 0; i < pairs.length; i++){
             // Take bottom and top cards of table
@@ -210,12 +230,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Some player breaks the cards
     function on_breakcards(data){
-        // Nothing else happens
-        on_finish_round(data);
+        // on_finish_round handles everything
+        // except cheating?
     }
 
     // Take cards into hand
     function breakcards(){
+        // TODO Ask other players if they want to 
+        // throw more cards first
         socket.emit('breakcards', 
             {'username': username});
     }
@@ -288,10 +310,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear all cards from the table
         table_cards.innerHTML = '';
         // Reload the cards in the player's hand
-        selected_cards = [];
+        for(var i = 0; i < data.cards.length; i++){
+            var card_id = "card" + data.cards[i];
+            if(!document.getElementById(card_id)) {
+                const card = make_card(card_id);
+                own_cards.append(card);
+            }
+        }
+        // TODO Set correct player card counts
 
-        // TODO reload the cards
-        // TODO update card count of deck
+        // Update card count of deck
+        document.getElementById('deckcount').innerHTML = 
+            data.deckcount;
 
         update_current_player(data.newplayer);
     }
@@ -307,7 +337,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Update the current player
         current_player = new_player;
-        // TODO Set styling for current player
+        // Set styling for current player
+        if (username != current_player){
+            // TODO Set styling for current player
+        }
     }
 
     // When this player becomes the current player

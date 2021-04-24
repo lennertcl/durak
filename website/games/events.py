@@ -1,4 +1,4 @@
-from flask import session
+from flask import session, request
 from flask_socketio import send, emit, join_room, leave_room
 from website import socketio, gameManager
 from website.durak_game.card import Card
@@ -10,6 +10,9 @@ from website.durak_game.card import Card
 def join(data):
     room = session.get("room")
     join_room(room)
+    game = gameManager.current_games[room]
+    player = game.get_player(session.get("username"))
+    player.sid = request.sid
     event = {"event": "joined",
              "username": session.get("username")}
     emit('status', event, room=room)
@@ -52,13 +55,10 @@ def throw_cards(data):
 def take_cards(data):
     room = session.get("room")
     game = gameManager.current_games[room]
-    count = game.get_table_cards_count()
     game.take_cards()
-    event = {"event": "takecards",
-             "player": data["username"],
-             "cardcount": count,
-             "newplayer": game.current_player.username}
+    event = {"event": "takecards"}
     emit('move', event, room=room)
+    emit_finish_round(game)
 
 # Event when a player breaks all cards
 @socketio.on("breakcards")
@@ -66,9 +66,9 @@ def break_cards(data):
     room = session.get("room")
     game = gameManager.current_games[room]
     game.break_cards()
-    event = {"event": "breakcards",
-             "newplayer": game.current_player.username}
+    event = {"event": "breakcards"}
     emit('move', event, room=room)
+    emit_finish_round(game)
 
 # Event when a player places a top card on
 # another card to break
@@ -108,3 +108,14 @@ def pass_trump(data):
     event = {"event": "passtrump", 
              "newplayer": game.current_player.username}
     emit('move', event, room=room)
+
+# Give every player the necessary information
+# after a round is finished
+def emit_finish_round(game):
+    event = {"event": "finishround",
+             "newplayer": game.current_player.username,
+             "deckcount": game.deck.get_card_count()}
+    for player in game.players:
+        cards = [str(card) for card in player.cards]
+        event.update({"cards": cards})
+        emit('status', event, room=player.sid)

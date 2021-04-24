@@ -1,4 +1,5 @@
-from flask import render_template, url_for, redirect, abort, session
+from flask import (render_template, url_for, redirect, 
+                   abort, session)
 from flask_login import current_user, login_required
 from website import db, gameManager, socketio
 from website.games.forms import GameForm
