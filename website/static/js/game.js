@@ -4,13 +4,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const own_cards = document.getElementById('owncards');
     const table_cards = document.getElementById('tablecards');
     const current_player_buttons = document.getElementById('currentplayerbuttons');
-    // Execute once on startup
+    // Execute once when loading the page
     on_startgame();
 
+    // TODO fix is_receiving
 
     // When user connects to the game
     socket.on('connect', () => {
-        socket.emit('join', {"username": username});
+        socket.emit('join', {'username': username});
     });
 
     // Events when something changes to game status
@@ -62,13 +63,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // When user clicks pass using cards button
     document.querySelector('#passcards').onclick = () => {
-        console.log("test");
-        passcards();
+        try_passcards();
     }
 
     // When user clicks pass using cards button
     document.querySelector('#passtrump').onclick = () => {
-        passtrump();
+        try_passtrump();
     }
 
     // When user clicks the leave button
@@ -104,21 +104,28 @@ document.addEventListener('DOMContentLoaded', () => {
             // User throws new cards onto table
             if(current_player != username){
                 // Only other players can throw cards
-                throwcards();
+                try_throwcards();
+            }else{
+                // TODO if its a top card then select
+                // it for the current player and allow
+                // him to move it
             }
         }
         else{
             if (selected_cards.length == 1){
                 // You can only throw 1 card on top of other card
                 breakcard(target.id);
-            }
-            else{
+            }else{
                 // TODO Show error message to user
                 console.log("No cards / more than 1 card selected when breaking");
             }
         }
 
     }
+
+
+    // GAME STATUS
+
 
     // When the game starts
     function on_startgame(){
@@ -147,8 +154,31 @@ document.addEventListener('DOMContentLoaded', () => {
         // TODO remove from the table
     }
 
+
+    // THROWING CARDS
+
+
+    // Try throwing the cards
+    // If throwing the cards is possible,
+    // the server will emit the event to everyone
+    function try_throwcards(){
+        // Send throwcards to server
+        socket.emit('throwcards', 
+            {'username': username,
+             'cards': selected_cards});
+    }
+
     // Some player throws cards on the table
     function on_throwcards(data){
+        if (username == data.player){
+            do_throwcards();
+        }else{
+            // Edit the player's card count
+            var player_count = document.
+                getElementById('cardcount' + data.player);
+            player_count.innerHTML = parseInt(player_count.innerHTML)
+                                        - data.cards.length;
+        }
         // Show the cards on the table
         for(var i = 0; i < data.cards.length; i++){
             // Create a new bottom-top card pair
@@ -160,24 +190,11 @@ document.addEventListener('DOMContentLoaded', () => {
             pair.append(card);
             table_cards.append(pair);
         }
-        if(username != data.player){
-            // Edit the player's card count
-            var player_count = document.
-                getElementById('cardcount' + data.player);
-            player_count.innerHTML = parseInt(player_count.innerHTML)
-                                        - data.cards.length;
-        }
-        // TODO animation that cards have been thrown
-        // from data.player to table cards
     }
 
     // Throw cards into the game
-    function throwcards(){
-        // Let other users know
-        socket.emit('throwcards', 
-            {'username': username,
-             'cards': selected_cards});
-        // Remove the cards from your hand
+    function do_throwcards(){
+       // Remove the cards from your hand
         for(var i = 0; i < selected_cards.length; i++){
             var card = document.getElementById(selected_cards[i]);
             card.remove();
@@ -185,6 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear the selected cards
         selected_cards = [];
     }
+
+
+    // TAKING CARDS
+
 
     // Some player takes cards into his hand
     function on_takecards(){
@@ -228,6 +249,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
+    // BREAKING CARDS
+
+
     // Some player breaks the cards
     function on_breakcards(data){
         // on_finish_round handles everything
@@ -266,21 +291,22 @@ document.addEventListener('DOMContentLoaded', () => {
         selected_cards = [];
     }
 
-    // User passes cards using extra cards
-    function passcards(){
-        // TODO if no cards?
+
+    // PASSING CARDS
+
+
+    // Try passing the cards
+    // If passing the cards is possible,
+    // the server will emit the event to everyone
+    function try_passcards(){
         socket.emit('passcards', {'cards': selected_cards});
-        // Remove the cards from your hand
-        for(var i = 0; i < selected_cards.length; i++){
-            var card = document.getElementById(selected_cards[i]);
-            card.remove();
-        }
-        // Clear the selected cards
-        selected_cards = [];
     }
 
     // Some player passed using cards
     function on_passcards(data){
+        if (data.player == username){
+            do_passcards();
+        }
         // Add the cards to the table
         for(var i = 0; i < data.cards.length; i++){
             // Create a new bottom-top card pair
@@ -295,8 +321,21 @@ document.addEventListener('DOMContentLoaded', () => {
         update_current_player(data.newplayer);
     }
 
-    // User passes cards using his trump card
-    function passtrump(){
+    // User passes cards using extra cards
+    function do_passcards(){
+        // Remove the cards from your hand
+        for(var i = 0; i < selected_cards.length; i++){
+            var card = document.getElementById(selected_cards[i]);
+            card.remove();
+        }
+        // Clear the selected cards
+        selected_cards = [];
+    }
+    
+    // Try passing the cards
+    // If passing the cards is possible,
+    // the server will emit the event to everyon
+    function try_passtrump(){
         socket.emit('passtrump', {});
     }
 
@@ -304,6 +343,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function on_passtrump(data){
         update_current_player(data.newplayer);
     }
+
+
+    // HELPER FUNCTIONS
+
 
     // Change everything after the round is finished
     function on_finish_round(data){

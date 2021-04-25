@@ -20,9 +20,13 @@ class DurakGame:
         self.lobby = [] # The players in the lobby
         self.players = [] # The players currently playing
         self.trump = None
-        self.current_player = None
-        self.table_cards = {} # The cards currently on the table
         self.trump_card = None
+        self.current_player = None
+        # The cards currently on the table
+        self.table_cards = {} 
+        # Indicates whether the current player is receiving cards
+        # or is throwing cards
+        self.is_receiving = False
 
     # Return the number of players in the lobby
     def get_lobby_count(self):
@@ -102,12 +106,18 @@ class DurakGame:
                     starting_player = player
         self.current_player = starting_player
 
+        # The first player should throw cards
+        self.is_receiving = False
+
     # If the deck is not empty, new cards are distributed
     # If the deck is empty, players that are finished are
     # transfered to the lobby
     # The current player is set to the next player
-    def finish_round(self):
-        if not(self.deck.is_empty()):
+    # @param next_player
+    #   Indicates whether the current player should
+    #   be set to the next player
+    def finish_round(self, next_player=True):
+        if not self.deck.is_empty():
             self.distribute_new_cards()
         # No else: need to check again because
         # the deck might have become empty
@@ -116,8 +126,12 @@ class DurakGame:
         if self.is_finished():
             # TODO ?
             pass
-        # Update the current player
-        self.current_player = self.next_player(self.current_player)
+        if next_player:
+            # Update the current player
+            self.current_player = self.next_player(self.current_player)
+        # After the round is finished the current player
+        # is always a throwing player
+        self.is_receiving = False
 
     # As long as there are cards in the deck, every
     # player gets back up to the starting amount of
@@ -154,28 +168,31 @@ class DurakGame:
     def break_card(self, bottom_card, top_card):
         # Breaking must be possible
         if not(self.is_possible_break_card(bottom_card, top_card)):
-            raise AssertionError("Bottom card not on table or card already broken")
+            return False
         newdict = {bottom_card: top_card}
         self.table_cards.update(newdict)
         self.current_player.remove_cards([top_card])
+        return True
 
     # Test whether the bottom card can break the top card
     # with the current board position
     def is_possible_break_card(self, bottom_card, top_card):
-        return (bottom_card in list(self.table_cards.keys()) 
+        return (bottom_card in self.table_cards 
             and (self.table_cards.get(bottom_card) is None))
 
     # Player breaks the cards on the table:
     # Clear the table
     def break_cards(self):
-        self.table_cards.clear()
-        self.finish_round()
-        if not self.can_break():
+        if not self.is_legal_break_cards():
             # TODO this player has cheated
-            print("{} has cheated".format(self.current_player))
+            pass
+        self.table_cards.clear()
+        # The turn remains with the current player,
+        # he can throw cards
+        self.finish_round(next_player=False)
     
     #checks if a set of the played cards can break the cards on table
-    def can_break(self):
+    def is_legal_break_cards(self):
         breakable = True
         for i in self.table_cards.items():
             if i[1] is None:
@@ -201,14 +218,23 @@ class DurakGame:
     # @param cards
     #   List of cards to remove
     def throw_cards(self, player, cards):
-        if not(self.is_possible_throw_cards(cards)):
-            raise AssertionError("Too much cards thrown")
+        if not self.is_possible_throw_cards(cards):
+            return False
+        if not self.is_receiving:
+            if player == self.current_player:
+                # The current player is throwing cards
+                # to the next player
+                self.current_player = self.next_player(self.current_player)
+                self.is_receiving = True
+            else:
+                return False
         if not self.is_legal_throw_cards(player, cards):
             # TODO the player has cheated
             pass
         player.remove_cards(cards)
         for card in cards:
             self.table_cards[card] = None
+        return True
 
     # It is not possible to throw more cards if the
     # player doesn't have enough cards to break them
@@ -223,7 +249,6 @@ class DurakGame:
     # The player has to be one of the neighbors of
     # the current player and the symbol of each card 
     # to be thrown has to be present already
-    # TODO first move of round
     def is_legal_throw_cards(self, player, cards):
         for card in cards:
             if card not in self.table_cards:
@@ -246,7 +271,7 @@ class DurakGame:
                 cards.append(top)
         self.current_player.add_cards(cards)
         self.table_cards.clear()
-        self.finish_round()
+        self.finish_round(next_player=True)
 
 
     # PASSING ON
@@ -255,18 +280,20 @@ class DurakGame:
     #pass on the cards with given cards of the players own cards
     def pass_on(self, cards):
         if not self.is_possible_pass_on(cards):
-            raise AssertionError("Impossible pass on")
+            return False
         for card in cards:
             self.table_cards[card] = None
         self.current_player.remove_cards(cards)
         self.current_player = self.next_player(self.current_player)
+        return True
 
     # Pass on the cards making use of the trump card, without
     # passing on the trump card
     def pass_on_using_trump(self):
         if not self.is_possible_pass_on([]):
-            raise AssertionError("Impossible pass on")
+            return False
         self.current_player = self.next_player(self.current_player)
+        return True
 
     # The amount of cards passed should not exceed the
     # amount of cards of the player passing to

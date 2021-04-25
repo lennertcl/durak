@@ -44,11 +44,12 @@ def throw_cards(data):
     # Translate string cards to actual cards
     cards = [Card.from_str(card_str) for 
              card_str in data["cards"]]
-    game.throw_cards(player, cards)
-    event = {"event": "throwcards",
-             "player": player.username,
-             "cards": data["cards"]}
-    emit('move', event, room=room)
+    is_thrown = game.throw_cards(player, cards)
+    if is_thrown:
+        event = {"event": "throwcards",
+                "player": player.username,
+                "cards": data["cards"]}
+        emit('move', event, room=room)
 
 # Event when a user takes cards
 @socketio.on("takecards")
@@ -78,11 +79,12 @@ def break_card(data):
     game = gameManager.current_games[room]
     bottomcard = Card.from_str(data["bottomcard"])
     topcard = Card.from_str(data["topcard"])
-    game.break_card(bottomcard,topcard)
-    event = {"event": "breakcard",
-             "bottomcard": data["bottomcard"],
-             "topcard": data["topcard"]}
-    emit('move', event, room=room)
+    is_broken = game.break_card(bottomcard,topcard)
+    if is_broken:
+        event = {"event": "breakcard",
+                "bottomcard": data["bottomcard"],
+                "topcard": data["topcard"]}
+        emit('move', event, room=room)
 
 # Event when a user passes cards to other players
 @socketio.on("passcards")
@@ -92,22 +94,24 @@ def pass_cards(data):
     # Translate string cards to actual cards
     cards = [Card.from_str(card_str) for 
              card_str in data["cards"]]
-    game.pass_on(cards)
-    event = {"event": "passcards", 
-             "username": session.get("username"),
-             "newplayer": game.current_player.username,
-             "cards": data["cards"]}
-    emit('move', event, room=room)
+    is_passed = game.pass_on(cards)
+    if is_passed:
+        event = {"event": "passcards", 
+                "player": session.get("username"),
+                "newplayer": game.current_player.username,
+                "cards": data["cards"]}
+        emit('move', event, room=room)
 
 # Event when a user passed cards using trump
 @socketio.on("passtrump")
 def pass_trump(data):
     room = session.get("room")
     game = gameManager.current_games[room]
-    game.pass_on_using_trump()
-    event = {"event": "passtrump", 
-             "newplayer": game.current_player.username}
-    emit('move', event, room=room)
+    is_passed = game.pass_on_using_trump()
+    if is_passed:
+        event = {"event": "passtrump", 
+                "newplayer": game.current_player.username}
+        emit('move', event, room=room)
 
 # Give every player the necessary information
 # after a round is finished
