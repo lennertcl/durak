@@ -7,8 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Execute once when loading the page
     on_startgame();
 
-    // TODO fix is_receiving
-
     // When user connects to the game
     socket.on('connect', () => {
         socket.emit('join', {'username': username});
@@ -106,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Only other players can throw cards
                 try_throwcards();
             }else{
+                // Only current player can move top cards
                 // TODO if its a top card then select
                 // it for the current player and allow
                 // him to move it
@@ -228,8 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Prevent the user from pressing take cards before
         // any cards where thrown
         if(pairs.length == 0){
-            // TODO message to user
-            console.log("No cards to take yet");
             return;
         }
         // Let the other players know
@@ -375,7 +372,9 @@ document.addEventListener('DOMContentLoaded', () => {
             on_not_current_player();
         }
         // If you are the new current player:
-        else if(new_player == username){
+        // No else: you can be the current player
+        // again if there are only 2 players
+        if(new_player == username){
             on_current_player();
         }
         // Update the current player

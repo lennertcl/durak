@@ -30,6 +30,10 @@ class Deck:
     def add_card(self, card):
         self.cards.insert(0, card)
 
+    # Insert cards at the top of the deck
+    def insert_cards(self, cards):
+        self.cards += cards
+
     # Test whether the deck is empty
     def is_empty(self):
         return self.get_card_count() == 0

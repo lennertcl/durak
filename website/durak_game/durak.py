@@ -1,6 +1,7 @@
 from .card import Card
 from .player import Player
 from .deck import Deck
+from .cheat import Cheat
 
 # Class representing a game of Durak
 class DurakGame:
@@ -21,12 +22,16 @@ class DurakGame:
         self.players = [] # The players currently playing
         self.trump = None
         self.trump_card = None
+        # The player currently receiving cards
         self.current_player = None
         # The cards currently on the table
         self.table_cards = {} 
-        # Indicates whether the current player is receiving cards
-        # or is throwing cards
-        self.is_receiving = False
+        # Indicates whether the first card(s) of
+        # the round have already been thrown
+        self.throwing_started = False
+        # Dict of cheaters with the cheat they
+        # have performed
+        self.cheating = {}
 
     # Return the number of players in the lobby
     def get_lobby_count(self):
@@ -105,9 +110,7 @@ class DurakGame:
                     card.symbol < lowest_trump):
                     starting_player = player
         self.current_player = starting_player
-
-        # The first player should throw cards
-        self.is_receiving = False
+        self.throwing_started = False
 
     # If the deck is not empty, new cards are distributed
     # If the deck is empty, players that are finished are
@@ -116,7 +119,8 @@ class DurakGame:
     # @param next_player
     #   Indicates whether the current player should
     #   be set to the next player
-    def finish_round(self, next_player=True):
+    def finish_round(self, has_broken=True):
+        self.table_cards.clear()
         if not self.deck.is_empty():
             self.distribute_new_cards()
         # No else: need to check again because
@@ -126,12 +130,23 @@ class DurakGame:
         if self.is_finished():
             # TODO ?
             pass
-        if next_player:
-            # Update the current player
-            self.current_player = self.next_player(self.current_player)
-        # After the round is finished the current player
-        # is always a throwing player
-        self.is_receiving = False
+        # Update the current player
+        if has_broken:
+            # The current player has broken the cards,
+            # it's his turn to throw cards
+            self.current_player = self.next_player(
+                self.current_player)
+        else:
+            # The current player has taken, he is not
+            # allowed to throw cards
+            self.current_player = self.next_player(
+                self.next_player(self.current_player))
+        # At the beginning of each round the throwing
+        # has not started yet
+        self.throwing_started = False
+        # All cheats are cleared when the round finished
+        # TODO Breaking cards cheat
+        self.cheating.clear()
 
     # As long as there are cards in the deck, every
     # player gets back up to the starting amount of
@@ -155,6 +170,58 @@ class DurakGame:
             else:
                 new_players.append(player)
         self.players = new_players
+
+
+    # THROWING CARDS
+
+
+    # Player throws cards on table:
+    # Remove the given cards from the player's
+    # current cards and add the cards to the
+    # cards on the table
+    # @param player
+    #   Player to remove cards of
+    # @param cards
+    #   List of cards to remove
+    def throw_cards(self, player, cards):
+        if not self.is_possible_throw_cards(cards):
+            return False
+        if not self.throwing_started:
+            # At the beginning of each round, only the
+            # player before the current receiving player
+            # can throw cards
+            if player == self.prev_player(self.current_player):
+                self.throwing_started = True
+            else:
+                return False
+        if not self.is_legal_throw_cards(player, cards):
+            # TODO the player has cheated
+            pass
+        # Throw the cards
+        player.remove_cards(cards)
+        for card in cards:
+            self.table_cards[card] = None
+        return True
+
+    # It is not possible to throw more cards if the
+    # player doesn't have enough cards to break them
+    def is_possible_throw_cards(self, cards):
+        cards_to_break = sum([1 for card in self.table_cards
+                              if card]) + len(cards)
+        return (cards_to_break
+                <= self.current_player.get_card_count())
+
+    # Test whether the given player can throw the
+    # given cards without cheating
+    # The player has to be one of the neighbors of
+    # the current player and the symbol of each card 
+    # to be thrown has to be present already
+    def is_legal_throw_cards(self, player, cards):
+        for card in cards:
+            if card not in self.table_cards:
+                return False
+        return (self.next_player(self.current_player) == player or
+                self.prev_player(self.current_player) == player)
 
 
     # BREAKING CARDS
@@ -186,10 +253,7 @@ class DurakGame:
         if not self.is_legal_break_cards():
             # TODO this player has cheated
             pass
-        self.table_cards.clear()
-        # The turn remains with the current player,
-        # he can throw cards
-        self.finish_round(next_player=False)
+        self.finish_round(has_broken=True)
     
     #checks if a set of the played cards can break the cards on table
     def is_legal_break_cards(self):
@@ -206,57 +270,6 @@ class DurakGame:
         return breakable
 
 
-    # THROWING CARDS
-
-
-    # Player throws cards on table:
-    # Remove the given cards from the player's
-    # current cards and add the cards to the
-    # cards on the table
-    # @param player
-    #   Player to remove cards of
-    # @param cards
-    #   List of cards to remove
-    def throw_cards(self, player, cards):
-        if not self.is_possible_throw_cards(cards):
-            return False
-        if not self.is_receiving:
-            if player == self.current_player:
-                # The current player is throwing cards
-                # to the next player
-                self.current_player = self.next_player(self.current_player)
-                self.is_receiving = True
-            else:
-                return False
-        if not self.is_legal_throw_cards(player, cards):
-            # TODO the player has cheated
-            pass
-        player.remove_cards(cards)
-        for card in cards:
-            self.table_cards[card] = None
-        return True
-
-    # It is not possible to throw more cards if the
-    # player doesn't have enough cards to break them
-    def is_possible_throw_cards(self, cards):
-        cards_to_break = sum([1 for card in self.table_cards
-                              if card]) + len(cards)
-        return (cards_to_break
-                <= self.current_player.get_card_count())
-
-    # Test whether the given player can throw the
-    # given cards without cheating
-    # The player has to be one of the neighbors of
-    # the current player and the symbol of each card 
-    # to be thrown has to be present already
-    def is_legal_throw_cards(self, player, cards):
-        for card in cards:
-            if card not in self.table_cards:
-                return False
-        return (self.next_player(self.current_player) == player or
-                self.prev_player(self.current_player) == player)
-
-
     # TAKING CARDS
 
 
@@ -264,14 +277,21 @@ class DurakGame:
     # Add the given cards to the player's current cards
     # and clear the table
     def take_cards(self):
+        if not self.is_possible_take_cards():
+            return False
         cards = []
         for bottom, top in self.table_cards.items():
             cards.append(bottom)
             if top:
                 cards.append(top)
         self.current_player.add_cards(cards)
-        self.table_cards.clear()
-        self.finish_round(next_player=True)
+        self.finish_round(has_broken=False)
+        return True
+
+    # Taking cards is only possible if there is
+    # at least 1 card on the table
+    def is_possible_take_cards(self):
+        return self.get_table_cards_count() > 0
 
 
     # PASSING ON
@@ -326,6 +346,27 @@ class DurakGame:
         symbol = self.table_cards.keys()[0].symbol
         return all(bottom_card.symbol == symbol and top_card is None 
                for bottom_card, top_card in self.table_cards)
+
+
+    # CHEATING
+
+
+    # Players replaces the trump card with
+    # one of his own cards
+    def steal_trump_card(self, player, card):
+        cheat = Cheat(Cheat.STEAL_TRUMP, self.trump_card)
+        player.remove_cards([card])
+        player.add_cards([self.trump_card])
+        self.trump_card = card
+        deck.add_card(card)
+        self.cheating[player] = cheat
+
+    # Player puts cards into the deck
+    def put_into_deck(self, player, cards):
+        cheat = Cheat(Cheat.PUT_INTO_DECK, cards)
+        player.remove_cards(cards)
+        self.deck.insert_cards(cards)
+        self.cheating[player] = cheat
 
 
     # HELPER FUNCTIONS
