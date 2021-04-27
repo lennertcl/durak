@@ -12,21 +12,14 @@
     var current_player = `{{ current_player }}`;
 </script>
 
-<h1>Game: {{ game.name }}</h1>
-<h2>Game id: {{ game.id }}</h2>
-
-<div class="row">
-    <div class="col-md-8">
         <div class="game">
             <!-- All players in the game -->
             <div id="otherplayers">
-                {% for other_player in game.players %}
-                    {% if other_player.username != player.username %}
-                        <div class="other-player" id="player{{ other_player.username }}">
-                            <p>{{ other_player.username }}</p>
-                            <p id="cardcount{{ other_player.username }}">{{ other_player.get_card_count() }}</p>
-                        </div>
-                    {% endif %}
+                {% for other_player, pos in other_players %}
+                    <div class="other-player player{{ pos }}" id="player{{ other_player.username }}">
+                        <p>{{ other_player.username }}</p>
+                        <p id="cardcount{{ other_player.username }}">{{ other_player.get_card_count() }}</p>
+                    </div>
                 {% endfor %}
             </div>
             <!-- The cards to break -->
@@ -49,7 +42,7 @@
                 <button class="btn btn-info" id="passcards">Pass using cards</button>
                 <button class="btn btn-secondary" id="passtrump">Pass using trump</button>
             </div>
-            <div class="cards">
+            <div class="deck">
                 <img class="card" id="trumpcard"
                     src="{{ url_for('static', filename='images/' + game.trump_card.get_image()) }}"/>
                 <img class="card" id="deck"
@@ -58,7 +51,7 @@
                     {{ game.deck.get_card_count() }}
                 </p>
             </div>
-            <div class="cards" id="owncards">
+            <div class="cards own-cards" id="owncards">
                 {% for card in player.cards %}
                     <img class="card"
                         src="{{ url_for('static', filename='images/' + card.get_image()) }}"
@@ -66,18 +59,25 @@
                 {% endfor %}
             </div>
         </div>
-    </div>
+<div class="row">
     <div class="col-md-4">
+        <h1>Game: {{ game.name }}</h1>
+        <h2>Game id: {{ game.id }}</h2>
+    </div>
+    <div class="col-md-2">
         <h2>Trump</h2>
             <img class="card" id="trumpcard-side"
                 src="{{ url_for('static', filename='images/' + game.trump_card.get_image()) }}"/>
+    </div>
+    <div class="col-md-2">
         <h2>Players</h2>
         <div id="players_list">
             {% for other_player in game.players %}
                 <p id="sideplayer{{other_player.username}}">{{ other_player.username }}</p>
             {% endfor %}
         </div>
-
+    </div>
+    <div class="col-md-4">
         <button id="start_button" class="btn btn-primary">New game</button>
         <a href=" {{ url_for('main.home') }} " id="leave_button" class="btn btn-danger">Leave game</a>
     </div>

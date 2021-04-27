@@ -186,15 +186,17 @@ class DurakGame:
     def throw_cards(self, player, cards):
         if not self.is_possible_throw_cards(cards):
             return False
+        is_first_throw = False
         if not self.throwing_started:
             # At the beginning of each round, only the
             # player before the current receiving player
             # can throw cards
             if player == self.prev_player(self.current_player):
                 self.throwing_started = True
+                is_first_throw = True
             else:
                 return False
-        if not self.is_legal_throw_cards(player, cards):
+        if not self.is_legal_throw_cards(player, cards, is_first_throw):
             # TODO the player has cheated
             pass
         # Throw the cards
@@ -216,10 +218,15 @@ class DurakGame:
     # The player has to be one of the neighbors of
     # the current player and the symbol of each card 
     # to be thrown has to be present already
-    def is_legal_throw_cards(self, player, cards):
-        for card in cards:
-            if card not in self.table_cards:
-                return False
+    def is_legal_throw_cards(self, player, cards, is_first_throw=False):
+        if is_first_throw:
+            # The player can only throw cards of the same symbol
+            return (player == self.prev_player(self.current_player)
+                and all(card.symbol == cards[0].symbol for card in cards))
+        else:
+            for card in cards:
+                if card not in self.table_cards:
+                    return False
         return (self.next_player(self.current_player) == player or
                 self.prev_player(self.current_player) == player)
 

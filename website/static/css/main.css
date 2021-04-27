@@ -1,7 +1,77 @@
+/* GAME */
+
+
 .game {
     width:100%;
-    height:400px;
+    height:600px;
     background-color:darkgreen;
+    position:relative;
+}
+
+
+/* PLAYERS */
+
+.player1{
+    left:0;
+    bottom:150px;
+}
+
+.player2{
+    left:0;
+    bottom:300px;
+}
+
+.player3{
+    left:150px;
+    top:0;
+}
+
+.player4{
+    top:0;
+    left:50%;
+    transform: translate(-50%, 0);
+}
+
+.player5{
+    right:150px;
+    top:0;
+}
+
+.player6{
+    right:0;
+    bottom:300px;
+}
+
+.player7{
+    right:0;
+    bottom:150px;
+}
+
+.other-player{
+    position:absolute;
+    width:195px;
+    height:100px;
+    background: url(../images/red_back.png);
+    background-size: 65px 100px;
+    background-repeat: repeat-x;
+    font-size: x-large;
+    text-align:center;
+    text-overflow:clip;
+}
+
+.current-player{
+    color:blue;
+}
+
+
+/* CARDS */
+
+
+.own-cards{
+    position:absolute;
+    bottom:0;
+    left:50%;
+    transform: translate(-50%, 0);
 }
 
 /* Any card */
@@ -16,7 +86,7 @@
     display: flex;
 }
 
-/* Cards currently on the table */
+/* Cards currently played on the table */
 .table-cards{
     background-color:darkslategray;
     height:140px;
@@ -40,17 +110,8 @@
     bottom:0;
 }
 
-.other-player{
-    width:195px;
-    height:100px;
-    background: url(../images/red_back.png);
-    background-size: 65px 100px;
-    background-repeat: repeat-x;
-    font-size: x-large;
-    text-align:center;
-    text-overflow:clip;
-}
-
-.current-player{
-    color:blue;
+.deck{
+    margin:auto;
+    display:flex;
+    width:160px;
 }

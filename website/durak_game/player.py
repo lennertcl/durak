@@ -1,6 +1,18 @@
 # Class representing a player of the game
 class Player:
 
+    # Mapping the number of players on the table to
+    # the positions the players should be at
+    POSITIONS = {
+        1: (4,),
+        2: (2, 6),
+        3: (2, 4, 6),
+        4: (1, 3, 5, 7),
+        5: (1, 2, 4, 6, 7),
+        6: (1, 2, 3, 5, 6, 7),
+        7: (1, 2, 3, 4, 5, 6, 7),
+    }
+
     # Initialize a player
     # @param username
     #   The username of the player
