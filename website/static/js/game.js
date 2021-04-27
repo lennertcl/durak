@@ -128,9 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // When the game starts
     function on_startgame(){
-        if (current_player == username){
-            on_current_player();
-        }
+        update_current_player(current_player);
     }
 
     // Some player joins the game
@@ -249,6 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // BREAKING CARDS
 
+    // TODO fix bug when another player breaks a card to cheat
 
     // Some player breaks the cards
     function on_breakcards(data){
@@ -357,7 +356,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 own_cards.append(card);
             }
         }
-        // TODO Set correct player card counts
+
+        // Update card count of other players
+        var other_players = document.getElementById('otherplayers').
+            getElementsByTagName('div');
+        for(var i = 0; i < other_players.length; i++){
+            var name = other_players[i].id.replace('player', '');
+            count = document.getElementById('cardcount' + name);
+            count.innerHTML = data.cardcounts[name];
+        }
 
         // Update card count of deck
         document.getElementById('deckcount').innerHTML = 
@@ -368,31 +375,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function update_current_player(new_player){
         // If you were the current player
-        if (current_player == username){
-            on_not_current_player();
+        if (current_player == username
+            && new_player != username){
+            // You can be the current player
+            // twice in a row
+            on_not_current_player(new_player);
         }
-        // If you are the new current player:
-        // No else: you can be the current player
-        // again if there are only 2 players
-        if(new_player == username){
+        else if(new_player == username){
             on_current_player();
+        }
+        // Remove styling from previous current player
+        var player = document.getElementById('player' + current_player);
+        if(player){
+            // Only if the current player had styling
+            player.className = player.className.replace(' current-player', '');
+        }
+        // Add styling to the current player
+        player = document.getElementById('player' + new_player);
+        if(player){
+            player.className += ' current-player';
         }
         // Update the current player
         current_player = new_player;
-        // Set styling for current player
-        if (username != current_player){
-            // TODO Set styling for current player
-        }
     }
 
     // When this player becomes the current player
     function on_current_player(){
-        current_player_buttons.style.display = "block";
+        current_player_buttons.style.display = 'block';
     }
 
     // When this player stops being the current player
-    function on_not_current_player(){
-        current_player_buttons.style.display = "none";
+    function on_not_current_player(new_player){
+        current_player_buttons.style.display = 'none';
     }
 
     // Create a card

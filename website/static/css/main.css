@@ -63,6 +63,13 @@
     color:blue;
 }
 
+.current-player-buttons{
+    position:absolute;
+    bottom:150px;
+    left:50%;
+    transform: translate(-50%, 0);
+}
+
 
 /* CARDS */
 
@@ -89,8 +96,13 @@
 /* Cards currently played on the table */
 .table-cards{
     background-color:darkslategray;
-    height:140px;
     display: flex;
+    height:140px;
+    position:absolute;
+    bottom:200px;
+    width:60%;
+    left:50%;
+    transform: translate(-50%, 0);
 }
 
 /* Div that contains bottom card and top card to stack */
@@ -111,7 +123,11 @@
 }
 
 .deck{
+    position:absolute;
     margin:auto;
     display:flex;
     width:160px;
+    bottom:60%;
+    left:50%;
+    transform:translate(-50%, 0);
 }

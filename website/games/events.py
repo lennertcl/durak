@@ -118,7 +118,11 @@ def pass_trump(data):
 def emit_finish_round(game):
     event = {"event": "finishround",
              "newplayer": game.current_player.username,
-             "deckcount": game.deck.get_card_count()}
+             "deckcount": game.deck.get_card_count(),
+             "cardcounts": {
+                player.username:player.get_card_count()
+                for player in game.players}
+            }
     for player in game.players:
         cards = [str(card) for card in player.cards]
         event.update({"cards": cards})

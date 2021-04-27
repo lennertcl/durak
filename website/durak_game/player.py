@@ -27,6 +27,10 @@ class Player:
 
     def __str__(self):
         return "{}".format(self.username)
+    
+    # Usernames are unique
+    def __eq__(self, other):
+        return self.username == other.username
 
     # Add the given cards to the player's cards
     # @param new_cards
@@ -45,3 +49,19 @@ class Player:
     # Get the amount of cards of this player
     def get_card_count(self):
         return len(self.cards)
+
+    # Get the players and their seat number for the game
+    # in correct order
+    def get_players_in_position(self, game):
+        # The player should have the correct neighbors
+        offset = game.players.index(self) + 1
+        player_count = game.get_player_count()
+        # Seat positions for this game
+        positions = Player.POSITIONS[player_count - 1]
+        other_players = []
+        # Add every player and their seat number
+        for i in range(0, player_count - 1):
+            idx = (offset + i) % player_count
+            other_players.append((game.players[idx], 
+                                  positions[i]))
+        return other_players
