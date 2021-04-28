@@ -3,8 +3,6 @@ from flask_socketio import send, emit, join_room, leave_room
 from website import socketio, gameManager
 from website.durak_game.card import Card
 
-# TODO prevent users from doing impossible stuff
-
 # Event when user joins a room
 @socketio.on("join")
 def join(data):
@@ -66,10 +64,11 @@ def take_cards(data):
 def break_cards(data):
     room = session.get("room")
     game = gameManager.current_games[room]
-    game.break_cards()
-    event = {"event": "breakcards"}
-    emit('move', event, room=room)
-    emit_finish_round(game)
+    is_broken = game.break_cards()
+    if is_broken:
+        event = {"event": "breakcards"}
+        emit('move', event, room=room)
+        emit_finish_round(game)
 
 # Event when a player places a top card on
 # another card to break

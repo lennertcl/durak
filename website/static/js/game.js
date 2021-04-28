@@ -51,12 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // When user clicks take cards button
     document.querySelector('#takecards').onclick = () => {
+        console.log('taking cards');
         takecards();
     }
     
     // When user clicks break cards button
     document.querySelector('#breakcards').onclick = () => {
-        breakcards();
+        console.log('breaking cards');
+        try_breakcards();
     }
 
     // When user clicks pass using cards button
@@ -256,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Take cards into hand
-    function breakcards(){
+    function try_breakcards(){
         // TODO Ask other players if they want to 
         // throw more cards first
         socket.emit('breakcards', 

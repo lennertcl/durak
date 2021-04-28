@@ -192,13 +192,16 @@ class DurakGame:
             # player before the current receiving player
             # can throw cards
             if player == self.prev_player(self.current_player):
-                self.throwing_started = True
                 is_first_throw = True
             else:
                 return False
         if not self.is_legal_throw_cards(player, cards, is_first_throw):
             # TODO the player has cheated
-            pass
+            print("Illegal throw by {}".format(player))
+            return False # Illegal for now
+        # Goes here because first throw could have been 
+        # illegal
+        self.throwing_started = True
         # Throw the cards
         player.remove_cards(cards)
         for card in cards:
@@ -224,9 +227,14 @@ class DurakGame:
             return (player == self.prev_player(self.current_player)
                 and all(card.symbol == cards[0].symbol for card in cards))
         else:
+            # A card with the same symbol has to be on the
+            # table already
             for card in cards:
-                if card not in self.table_cards:
+                if not(any((card.symbol == bottom_card.symbol 
+                    or (top_card and card.symbol == top_card.symbol))
+                    for bottom_card, top_card in self.table_cards.items())): 
                     return False
+        # Only the neighbors can legally throw cards
         return (self.next_player(self.current_player) == player or
                 self.prev_player(self.current_player) == player)
 
@@ -243,14 +251,14 @@ class DurakGame:
         # Breaking must be possible
         if not(self.is_possible_break_card(bottom_card, top_card)):
             return False
-        newdict = {bottom_card: top_card}
-        self.table_cards.update(newdict)
+        self.table_cards[bottom_card] = top_card
         self.current_player.remove_cards([top_card])
         return True
 
     # Test whether the bottom card can break the top card
     # with the current board position
     def is_possible_break_card(self, bottom_card, top_card):
+        # There may not already be another card on top
         return (bottom_card in self.table_cards 
             and (self.table_cards.get(bottom_card) is None))
 
@@ -259,22 +267,32 @@ class DurakGame:
     def break_cards(self):
         if not self.is_legal_break_cards():
             # TODO this player has cheated
-            pass
+            print("Illegal breaking")
+            return False # Illegal for now
         self.finish_round(has_broken=True)
+        return True
     
     #checks if a set of the played cards can break the cards on table
     def is_legal_break_cards(self):
-        breakable = True
-        for i in self.table_cards.items():
-            if i[1] is None:
-                breakable = False
-                break
-            #legal way of breaking, may be removed to allow cheating
-            elif not self.is_trump(i[1]):
-                if (i[0].get_suit() != i[1].get_suit()) or (i[0] < i[1]):
-                    breakable = False
-                    break
-        return breakable
+        for bottom_card, top_card in self.table_cards.items():
+            if not top_card:
+                # There has to be a top card
+                return False
+            elif self.is_trump(top_card):
+                # A trump card can break any card except a
+                # higher trump card
+                if (self.is_trump(bottom_card)
+                    and bottom_card > top_card):
+                    return False
+            else:
+                # A non trump card can only break lower
+                # cards of the same suit
+                if (bottom_card.get_suit() != top_card.get_suit()
+                 or (bottom_card > top_card)):
+                    return False
+        return True
+
+    #TODO moving top cards onto other bottom cards
 
 
     # TAKING CARDS
@@ -308,6 +326,10 @@ class DurakGame:
     def pass_on(self, cards):
         if not self.is_possible_pass_on(cards):
             return False
+        if not self.is_legal_pass_on(cards):
+            # TODO cheated
+            print("Illegal passing on")
+            return False # Illegal for now
         for card in cards:
             self.table_cards[card] = None
         self.current_player.remove_cards(cards)
@@ -319,6 +341,10 @@ class DurakGame:
     def pass_on_using_trump(self):
         if not self.is_possible_pass_on([]):
             return False
+        if not self.is_legal_pass_on_using_trump():
+            # TODO cheated
+            print("Illegal passing on (trump)")
+            return False # Illegal for now
         self.current_player = self.next_player(self.current_player)
         return True
 
@@ -340,7 +366,7 @@ class DurakGame:
         symbol = cards[0].symbol
         return (all(card.symbol == symbol for card in cards) and
                 all(bottom_card.symbol == symbol and top_card is None 
-                for bottom_card, top_card in self.table_cards))
+                for bottom_card, top_card in self.table_cards.items()))
 
     # Test whether the current player can pas on the cards
     # to the next player using the trump card without cheating
@@ -350,9 +376,15 @@ class DurakGame:
     def is_legal_pass_on_using_trump(self):
         if not self.table_cards:
             return False
-        symbol = self.table_cards.keys()[0].symbol
-        return all(bottom_card.symbol == symbol and top_card is None 
-               for bottom_card, top_card in self.table_cards)
+        symbol = next(iter(self.table_cards)).symbol
+        # Only cards of this type should be on the table
+        if not all(bottom_card.symbol == symbol and top_card is None 
+               for bottom_card, top_card in self.table_cards.items()):
+            return False
+        # Current player should have trump of this symbol
+        return Card(self.trump, symbol) in self.current_player.cards
+
+
 
 
     # CHEATING

@@ -48,13 +48,10 @@ def lobby(game_id):
 @login_required
 def game(game_id):
     try:
-        print("before")
         game = gameManager.current_games[game_id]
         player = game.get_player(current_user.username)
         other_players = player.get_players_in_position(game)
-        print("after")
     except KeyError as e:
-        print("error" + e)
         abort(404)
     return render_template('game.html', game=game,
                 player=player,
