@@ -11,13 +11,11 @@ class DurakGame:
     #   4 digit int id of the game
     # @param name
     #   The name given to the game
-    # @param lowest_card
-    #   Like Deck.__init__ lowest_card
-    def __init__(self, id, name, lowest_card=2):
+    def __init__(self, id, name):
         self.cards_per_player = 0
         self.id = id
         self.name = name
-        self.deck = Deck(lowest_card)
+        self.deck = None
         self.lobby = [] # The players in the lobby
         self.players = [] # The players currently playing
         self.trump = None
@@ -83,11 +81,8 @@ class DurakGame:
         self.players += self.lobby
         self.lobby = []
 
-        # Make sure there are enough cards
-        if (self.get_player_count() * cards_per_player
-            > self.deck.get_card_count()):
-            raise ValueError("Too many cards per player")
-
+        # Initialize the deck
+        self.deck = Deck(self.get_lowest_card())
         self.deck.shuffle()
 
         #Distribute the cards
@@ -155,7 +150,7 @@ class DurakGame:
         player = self.current_player
         done = False
         while not done:
-            while player.get_card_count() < self.cards_per_player and self.deck:
+            while player.get_card_count() < self.cards_per_player and self.deck.cards:
                 player.cards.append(self.deck.cards.pop())
             player = self.next_player(player)
             done = player == self.current_player
@@ -292,7 +287,27 @@ class DurakGame:
                     return False
         return True
 
-    #TODO moving top cards onto other bottom cards
+    # Move a top card to another bottom card
+    def move_top_card(self, top_card, new_bottom_card):
+        if not self.is_possible_move_top_card():
+            return False
+        # Get the old bottom card and remove it's top card
+        bottom_card = self.table_cards[
+            list(mydict.values()).index(top_card)]
+        self.table_cards[bottom_card] = None
+        # Put the card on top of the new bottom card
+        self.table_cards[new_bottom_card] = top_card
+        return True
+
+    # Test whether it is possible to move the given
+    # top card to the new bottom card
+    # The given top card must be a top card, the
+    # bottom card must be a bottom card without
+    # a top card on top
+    def is_possible_move_top_card(self, top_card, new_bottom_card):
+        return (top_card in self.table_cards.values() and
+                new_bottom_card in self.table_cards and
+                not self.table_cards[new_bottom_cards])
 
 
     # TAKING CARDS
@@ -385,8 +400,6 @@ class DurakGame:
         return Card(self.trump, symbol) in self.current_player.cards
 
 
-
-
     # CHEATING
 
 
@@ -428,3 +441,13 @@ class DurakGame:
     # Test whether the game is finished
     def is_finished(self):
         return self.get_player_count() == 1
+
+    # Get the lowest card for this game
+    # The card is picked so that it is always
+    # possible to give every player enough cards
+    # but there are not too many cards in the deck
+    def get_lowest_card(self):
+        count = self.get_player_count()
+        if count < 6:
+            return Card.EIGHT - count
+        return Card.TWO

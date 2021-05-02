@@ -8,7 +8,7 @@ from website.models import User
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username',
-                        validators=[DataRequired(), Length(max=20)])
+                        validators=[DataRequired(), Length(max=10)])
     email = StringField('Email',
                         validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -37,7 +37,7 @@ class LoginForm(FlaskForm):
 
 class UpdateAccountForm(FlaskForm):
     username = StringField('Username',
-                        validators=[DataRequired(), Length(max=20)])
+                        validators=[DataRequired(), Length(max=10)])
     email = StringField('Email',
                         validators=[DataRequired(), Email()])
     submit = SubmitField('Update')

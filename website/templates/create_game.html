@@ -18,19 +18,6 @@
                     {{ form.name(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
-            <div class="form-group">
-                {{ form.lowest_card.label(class="form-control-label") }}
-                {% if form.lowest_card.errors %}
-                    {{ form.lowest_card(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.lowest_card.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.lowest_card(class="form-control form-control-lg") }}
-                {% endif %}
-            </div>
         </fieldset>
         <div class="form-group">
             {{ form.submit(class="btn btn-info") }}

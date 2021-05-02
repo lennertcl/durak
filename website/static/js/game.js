@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Execute once when loading the page
     on_startgame();
 
+
+    // TODO on_move_top_card: user moves a top card
+    // to another top card
+
     // When user connects to the game
     socket.on('connect', () => {
         socket.emit('join', {'username': username});

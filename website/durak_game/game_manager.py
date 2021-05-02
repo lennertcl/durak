@@ -23,3 +23,10 @@ class GameManager:
         game = DurakGame(id, name, lowest_card)
         self.current_games[id] = game
         return game
+
+    # Delete a game
+    def remove_game(self, game_id):
+        del self.current_games[game_id]
+
+    # TODO removal of games that are finished
+    # or where everyone has disconnected
