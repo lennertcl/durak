@@ -42,6 +42,8 @@
                 <button class="btn btn-info" id="passcards">Pass using cards</button>
                 <button class="btn btn-secondary" id="passtrump">Pass using trump</button>
             </div>
+            <button class="btn btn-success allow-break-button" id="allowbreakbutton" 
+                disabled="1">Allow break</button>
             <div class="deck">
                 <img class="card" id="trumpcard"
                     src="{{ url_for('static', filename='images/' + game.trump_card.get_image()) }}"/>

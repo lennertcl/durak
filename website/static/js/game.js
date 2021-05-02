@@ -1,15 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     var socket = io();
     var selected_cards = [];
+    var selected_top_card = null;
     const own_cards = document.getElementById('owncards');
     const table_cards = document.getElementById('tablecards');
     const current_player_buttons = document.getElementById('currentplayerbuttons');
+    const allow_break_button = document.getElementById('allowbreakbutton');
+
     // Execute once when loading the page
     on_startgame();
-
-
-    // TODO on_move_top_card: user moves a top card
-    // to another top card
 
     // When user connects to the game
     socket.on('connect', () => {
@@ -50,6 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
             break;
             case 'passtrump':
                 on_passtrump(data);
+            case 'movetopcard':
+                on_move_top_card(data);
         }
     });
     
@@ -73,6 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // When user clicks pass using cards button
     document.querySelector('#passtrump').onclick = () => {
         try_passtrump();
+    }
+
+    // When user clicks allow break cards button
+    document.querySelector('#allowbreakbutton').onclick = () => {
+        allow_breakcards();
     }
 
     // When user clicks the leave button
@@ -109,17 +115,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if(current_player != username){
                 // Only other players can throw cards
                 try_throwcards();
-            }else{
-                // Only current player can move top cards
-                // TODO if its a top card then select
-                // it for the current player and allow
-                // him to move it
             }
         }
         else{
             if (selected_cards.length == 1){
                 // You can only throw 1 card on top of other card
                 breakcard(target.id);
+            }else if (current_player == username){
+                // Current player can move top cards
+                if (target.className.includes('bottom-card')){
+                    // Move a top card
+                    move_top_card(target.id);
+                }else{
+                    // Select a top card
+                    selected_top_card = target.id;
+                    // TODO styling for the card
+                }
             }else{
                 // TODO Show error message to user
                 console.log("No cards / more than 1 card selected when breaking");
@@ -263,8 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Take cards into hand
     function try_breakcards(){
-        // TODO Ask other players if they want to 
-        // throw more cards first
         socket.emit('breakcards', 
             {'username': username});
     }
@@ -291,6 +300,27 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(selected_cards[0]).remove();
         // Clear the selected cards
         selected_cards = [];
+    }
+
+    // When a user clicks the allow break cards button
+    function allow_breakcards(){
+        socket.emit('allowbreak', {});
+        allow_break_button.disabled = true;
+    }
+
+    // When a top card has moved
+    function on_move_top_card(data){
+        console.log(data);
+        // TODO move the card
+        // TODO remove the styling/selection
+    }
+
+    // When the current player moves one of the top cards
+    // to another top card
+    function move_top_card(new_bottom_card){
+        socket.emit('movetopcard',
+            {'new_bottomcard': new_bottom_card,
+             'topcard': selected_top_card});
     }
 
 
@@ -385,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
             && new_player != username){
             // You can be the current player
             // twice in a row
-            on_not_current_player(new_player);
+            on_not_current_player();
         }
         else if(new_player == username){
             on_current_player();
@@ -403,16 +433,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Update the current player
         current_player = new_player;
+        // Reset the allow break button
+        allow_break_button.disabled = false;
     }
 
     // When this player becomes the current player
     function on_current_player(){
         current_player_buttons.style.display = 'block';
+        allow_break_button.style.display = 'none';
     }
 
     // When this player stops being the current player
-    function on_not_current_player(new_player){
+    function on_not_current_player(){
         current_player_buttons.style.display = 'none';
+        allow_break_button.style.display = 'block';
     }
 
     // Create a card

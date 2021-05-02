@@ -11,8 +11,7 @@ from . import games
 def new_game():
     form = GameForm()
     if form.validate_on_submit():
-        game = gameManager.create_game(form.name.data,
-                                       int(form.lowest_card.data))
+        game = gameManager.create_game(form.name.data)
         return redirect(url_for('games.join', game_id=game.id))
 
     return render_template('create_game.html', title='New Game',

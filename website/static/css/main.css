@@ -70,6 +70,13 @@
     transform: translate(-50%, 0);
 }
 
+.allow-break-button{
+    position:absolute;
+    bottom:150px;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
 
 /* CARDS */
 

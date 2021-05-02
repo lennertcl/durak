@@ -30,6 +30,12 @@ class DurakGame:
         # Dict of cheaters with the cheat they
         # have performed
         self.cheating = {}
+        # Indicates whether the previous and
+        # next player have indicated that
+        # they won't throw any more cards 
+        # so the current player can break
+        self.next_allows_break = False
+        self.prev_allows_break = False
 
     # Return the number of players in the lobby
     def get_lobby_count(self):
@@ -107,6 +113,9 @@ class DurakGame:
         self.current_player = starting_player
         self.throwing_started = False
 
+        self.next_allows_break = False
+        self.prev_allows_break = False
+
     # If the deck is not empty, new cards are distributed
     # If the deck is empty, players that are finished are
     # transfered to the lobby
@@ -142,6 +151,9 @@ class DurakGame:
         # All cheats are cleared when the round finished
         # TODO Breaking cards cheat
         self.cheating.clear()
+        # Reset the breaking allowed flags
+        self.next_allows_break = False
+        self.prev_allows_break = False
 
     # As long as there are cards in the deck, every
     # player gets back up to the starting amount of
@@ -235,7 +247,7 @@ class DurakGame:
 
 
     # BREAKING CARDS
-    
+
 
     #break a card on table that is not yet broken
     #@param bottom_card
@@ -257,17 +269,36 @@ class DurakGame:
         return (bottom_card in self.table_cards 
             and (self.table_cards.get(bottom_card) is None))
 
+
     # Player breaks the cards on the table:
     # Clear the table
     def break_cards(self):
+        if not self.is_possible_break_cards():
+            return False
         if not self.is_legal_break_cards():
             # TODO this player has cheated
             print("Illegal breaking")
             return False # Illegal for now
         self.finish_round(has_broken=True)
         return True
+
+    # Indicate that the given player has confirmed
+    # that the current player can break
+    def allow_break_cards(self, player):
+        if player == self.next_player(self.current_player):
+            self.next_allows_break = True
+        if player == self.prev_player(self.current_player):
+            self.prev_allows_break = True
+
+    # Checks if the neighboring players of
+    # the current player have confirmed that
+    # the current player can break
+    def is_possible_break_cards(self):
+        return (self.next_allows_break and
+                self.prev_allows_break)
     
-    #checks if a set of the played cards can break the cards on table
+    # Checks if a set of the played cards can 
+    # break the cards on table
     def is_legal_break_cards(self):
         for bottom_card, top_card in self.table_cards.items():
             if not top_card:
@@ -293,7 +324,7 @@ class DurakGame:
             return False
         # Get the old bottom card and remove it's top card
         bottom_card = self.table_cards[
-            list(mydict.values()).index(top_card)]
+            list(self.table_cards.values()).index(top_card)]
         self.table_cards[bottom_card] = None
         # Put the card on top of the new bottom card
         self.table_cards[new_bottom_card] = top_card
@@ -307,7 +338,7 @@ class DurakGame:
     def is_possible_move_top_card(self, top_card, new_bottom_card):
         return (top_card in self.table_cards.values() and
                 new_bottom_card in self.table_cards and
-                not self.table_cards[new_bottom_cards])
+                not self.table_cards[new_bottom_card])
 
 
     # TAKING CARDS

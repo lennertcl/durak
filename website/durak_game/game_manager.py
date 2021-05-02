@@ -15,12 +15,12 @@ class GameManager:
         self.current_games = {}
 
     # Create a new DurakGame
-    def create_game(self, name, lowest_card):
+    def create_game(self, name):
         # Increment the id
         id = self.current_id
         self.current_id = (self.current_id + 1) % GameManager.MAX_ID
         # Create the game and add to current games
-        game = DurakGame(id, name, lowest_card)
+        game = DurakGame(id, name)
         self.current_games[id] = game
         return game
 
