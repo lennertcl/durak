@@ -307,6 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
             {'username': username,
              'bottomcard': bottom_card,
              'topcard': selected_cards[0]});
+        // TODO this should move to on_breakcard
+        // with a check if you are the current player
+        // so nothing happens if impossible breakcard
         // Remove the card from your hand
         document.getElementById(selected_cards[0]).remove();
         // Clear the selected cards

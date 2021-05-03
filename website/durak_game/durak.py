@@ -218,8 +218,9 @@ class DurakGame:
     # It is not possible to throw more cards if the
     # player doesn't have enough cards to break them
     def is_possible_throw_cards(self, cards):
-        cards_to_break = sum([1 for card in self.table_cards
-                              if card]) + len(cards)
+        cards_to_break = (sum([1 for card in self.table_cards
+                              if not self.table_cards[card]])
+                              + len(cards))
         return (cards_to_break
                 <= self.current_player.get_card_count())
 
@@ -405,10 +406,13 @@ class DurakGame:
 
     # Test whether the current player can pass on the cards
     # to the next player without cheating
+    # There should be at least 1 card
     # The given cards and the cards on the table should all
     # be cards with the same symbol
     # There should be no broken cards
     def is_legal_pass_on(self, cards):
+        if not cards:
+            return False
         symbol = cards[0].symbol
         return (all(card.symbol == symbol for card in cards) and
                 all(bottom_card.symbol == symbol and top_card is None 
