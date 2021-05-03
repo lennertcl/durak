@@ -62,8 +62,10 @@ class Card:
 
     # Equal if both symbol and suit are equal
     def __eq__(self, other):
-        return (self.symbol == other.symbol and
-                self.suit == other.suit)
+        if isinstance(other, Card):
+            return (self.symbol == other.symbol and
+                    self.suit == other.suit)
+        return False
 
     # Less than
     # A card is less than another if its symbol is

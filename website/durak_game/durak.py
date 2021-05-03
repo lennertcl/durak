@@ -320,10 +320,10 @@ class DurakGame:
 
     # Move a top card to another bottom card
     def move_top_card(self, top_card, new_bottom_card):
-        if not self.is_possible_move_top_card():
+        if not self.is_possible_move_top_card(top_card, new_bottom_card):
             return False
         # Get the old bottom card and remove it's top card
-        bottom_card = self.table_cards[
+        bottom_card = list(self.table_cards.keys())[
             list(self.table_cards.values()).index(top_card)]
         self.table_cards[bottom_card] = None
         # Put the card on top of the new bottom card

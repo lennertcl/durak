@@ -94,6 +94,12 @@
     height:100px;
 }
 
+.selected-card{
+    border-color:black;
+    border-style:solid;
+    border-width:medium;
+}
+
 /* Group of cards together */
 .cards{
     margin-bottom: 0;

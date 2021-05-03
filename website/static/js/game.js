@@ -56,13 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // When user clicks take cards button
     document.querySelector('#takecards').onclick = () => {
-        console.log('taking cards');
         takecards();
     }
     
     // When user clicks break cards button
     document.querySelector('#breakcards').onclick = () => {
-        console.log('breaking cards');
         try_breakcards();
     }
 
@@ -86,6 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('leave', {'username': username});
     };
 
+    // TODO refactor own_cards.onclick and table_cards.onclick
+    // into functions
+
     // When user clicks one of their own cards
     own_cards.onclick = (event) => {
         let target = event.target;
@@ -96,14 +97,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selected_cards.includes(target.id)){
             // Unselect card if already selected
             selected_cards = selected_cards.filter((value, index, arr) => value != target.id);
-            target.style.borderColor = '';
-            target.style.borderStyle = '';
-            target.style.borderWidth = '';
+            target.classList.remove('selected-card');
         }else{
             selected_cards.push(target.id);
-            target.style.borderColor = 'black';
-            target.style.borderStyle = 'solid';
-            target.style.borderWidth = 'medium';
+            target.classList.add('selected-card');
         }
     }
 
@@ -115,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(current_player != username){
                 // Only other players can throw cards
                 try_throwcards();
+                console.log(selected_cards);
             }
         }
         else{
@@ -124,12 +122,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }else if (current_player == username){
                 // Current player can move top cards
                 if (target.className.includes('bottom-card')){
-                    // Move a top card
-                    move_top_card(target.id);
+                    if(selected_top_card){
+                        // Move a top card
+                        move_top_card(target.id);
+                        // Unselect the card (even if not legal)
+                        document.getElementById(selected_top_card).classList.remove('selected-card');
+                        selected_top_card = null;
+                    }
                 }else{
-                    // Select a top card
-                    selected_top_card = target.id;
-                    // TODO styling for the card
+                    if(selected_top_card == target.id){
+                        // Unselecting the top card
+                        selected_top_card = null;
+                        // Unstyle the card
+                        target.classList.remove('selected-card');
+                    }else if(!selected_top_card){
+                        // Select a top card
+                        selected_top_card = target.id;
+                        // Style the card
+                        target.classList.add('selected-card');
+                    }
                 }
             }else{
                 // TODO Show error message to user
@@ -310,9 +321,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // When a top card has moved
     function on_move_top_card(data){
-        console.log(data);
-        // TODO move the card
-        // TODO remove the styling/selection
+        // Remove the old top card
+        document.getElementById(data.topcard).remove();
+        // Make the top card and put it on the new
+        // bottom card
+        var pair = document.getElementById(data.new_bottomcard).parentElement;
+        const card = make_card(data.topcard);
+        card.className = "card top-card";
+        pair.append(card);
     }
 
     // When the current player moves one of the top cards

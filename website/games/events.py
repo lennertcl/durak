@@ -79,7 +79,11 @@ def break_cards(data):
 # another card to break
 @socketio.on("breakcard")
 def break_card(data):
-    game, _ = get_game_and_player()
+    game, player = get_game_and_player()
+    if player != game.current_player:
+        # This is not yet allowed
+        # Change later for cheating
+        return
     bottomcard = Card.from_str(data["bottomcard"])
     topcard = Card.from_str(data["topcard"])
     is_broken = game.break_card(bottomcard,topcard)
@@ -99,7 +103,7 @@ def move_top_card(data):
         return
     new_bottomcard = Card.from_str(data["new_bottomcard"])
     topcard = Card.from_str(data["topcard"])
-    is_moved = game.move_top_card(new_bottomcard, topcard)
+    is_moved = game.move_top_card(topcard, new_bottomcard)
     if is_moved:
         event = {"event": "movetopcard",
                 "new_bottomcard": data["new_bottomcard"],
