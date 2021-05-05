@@ -6,7 +6,7 @@ from website.durak_game.durak import DurakGame
 
 @pytest.fixture()
 def game():
-    game = DurakGame(3865, "testgame", 5)
+    game = DurakGame(3865, "testgame")
     p1 = Player("p1")
     p2 = Player("p2")
     p3 = Player("p3")
@@ -31,16 +31,54 @@ def test_lobby(game):
 
 # THROWING
 
+# IS POSSIBLE
+
+def test_possible_throw_legal(game):
+    game.start_game()
+    p1 = game.prev_player(game.current_player)
+    card = p1.cards[0]
+
+    assert game.is_possible_throw_cards([card])
+
+# Test whether throwing too much cards for the
+# player to break is possible
+def test_possible_throw_too_much(game):
+    game.start_game()
+    p1 = game.prev_player(game.current_player)
+    p2 = game.current_player
+
+    # Give p2 limited number of cards
+    p2.cards = [Card(Card.HEARTS, Card.SEVEN)]
+    p1.cards = [Card(Card.HEARTS, Card.EIGHT), 
+                Card(Card.CLUBS, Card.EIGHT),
+                Card(Card.SPADES, Card.EIGHT)]
+    
+    assert not game.is_possible_throw_cards(p1.cards)
+
+# IS LEGAL (no cheats)
+
+# Test whether throwing the first card on the 
+# table from illegal players is possible
+def test_legal_throw_illegal_player(game):
+    game.start_game()
+    p1 = game.next_player(game.current_player)
+    card = p1.cards[0]
+
+    assert not game.is_legal_throw_cards(p1, [card])
+    
+
+# PERFORMING THROW
+
 
 # Test throwing the first card
 def test_throw_legal_first(game):
     game.start_game()
-    p1 = game.next_player(game.current_player)
+    p1 = game.prev_player(game.current_player)
     card = p1.cards[0]
-    game.throw_cards(p1, [card])
+    is_thrown = game.throw_cards(p1, [card])
 
+    assert is_thrown
     assert card in game.table_cards
-
     assert p1.get_card_count() == 5
 
 # Test throwing a card where the symbol
@@ -85,7 +123,7 @@ def test_throw_illegal_first(game):
 def test_break_legal(game):
     game.start_game()
 
-    p1 = game.next_player(game.current_player)
+    p1 = game.prev_player(game.current_player)
     p2 = game.current_player
 
     bottom_card = Card(Card.HEARTS, Card.SEVEN)
@@ -104,9 +142,14 @@ def test_break_legal(game):
 def test_break_no_bottom(game):
     game.start_game()
     p = game.current_player
+    card = p.cards[0]
 
-    with pytest.raises(AssertionError):
-        game.break_card(None, p.cards[0])
+    is_broken = game.break_card(None, card)
+    assert not is_broken
+    assert card in p.cards
+    assert not card in game.table_cards
+    assert not card in list(game.table_cards.values())
+    assert game.current_player == p
 
 # Test breaking a card when there is already another
 # card on top
@@ -123,17 +166,19 @@ def test_break_top_full(game):
     p2.add_cards([top_card])
 
     game.throw_cards(p1, [bottom_card])
-    game.break_card(bottom_card, top_card)
-    with pytest.raises(AssertionError):
-        game.break_card(bottom_card, top_card)
+    is_broken = game.break_card(bottom_card, top_card)
+
+    assert not is_broken
+    assert top_card in p2.cards
+    assert game.current_player == p2
 
 # Test taking cards without top cards
 def test_take_no_top(game):
     game.start_game()
-    p1 = game.next_player(game.current_player)
+    p1 = game.prev_player(game.current_player)
     p2 = game.current_player
-    cards = p1.cards[:2]
-    game.throw_cards(p1, cards)
+    card = p1.cards[0]
+    game.throw_cards(p1, [card])
     game.take_cards()
 
     print(p1.cards)
@@ -141,7 +186,7 @@ def test_take_no_top(game):
 
     assert not game.table_cards
 
-    assert p2.get_card_count() == 8
+    assert p2.get_card_count() == 7
     assert p1.get_card_count() == 6
 
 # Test taking cards with top cards
