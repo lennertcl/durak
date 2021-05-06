@@ -120,9 +120,10 @@ class DurakGame:
     # If the deck is empty, players that are finished are
     # transfered to the lobby
     # The current player is set to the next player
-    # @param next_player
-    #   Indicates whether the current player should
-    #   be set to the next player
+    # @param has_broken
+    #   Indicates how the round was finished
+    #   If true, the player has broken the cards.
+    #   If false, the player has taken the cards.
     def finish_round(self, has_broken=True):
         self.table_cards.clear()
         if not self.deck.is_empty():
