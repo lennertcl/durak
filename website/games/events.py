@@ -80,17 +80,14 @@ def break_cards(data):
 @socketio.on("breakcard")
 def break_card(data):
     game, player = get_game_and_player()
-    if player != game.current_player:
-        # This is not yet allowed
-        # Change later for cheating
-        return
     bottomcard = Card.from_str(data["bottomcard"])
     topcard = Card.from_str(data["topcard"])
-    is_broken = game.break_card(bottomcard,topcard)
+    is_broken = game.break_card(player, bottomcard, topcard)
     if is_broken:
         event = {"event": "breakcard",
                 "bottomcard": data["bottomcard"],
-                "topcard": data["topcard"]}
+                "topcard": data["topcard"],
+                "player": player.username}
         emit('move', event, room=game.id)
 
 # Event when the current player moves the top

@@ -1,3 +1,5 @@
+from time import time
+
 from .card import Card
 from .player import Player
 from .deck import Deck
@@ -36,6 +38,9 @@ class DurakGame:
         # so the current player can break
         self.next_allows_break = False
         self.prev_allows_break = False
+        # Timestamp of start of this game
+        # Used for garbage collection of old games
+        self.timestamp = time()
 
     # Return the number of players in the lobby
     def get_lobby_count(self):
@@ -252,17 +257,27 @@ class DurakGame:
 
 
     #break a card on table that is not yet broken
+    #@param player
+    #   The player breaking the cards
     #@param bottom_card
     #   the to be broken card on the table
     #@param top_card
     #   the card that breaks the bottom card
-    def break_card(self, bottom_card, top_card):
+    def break_card(self, player, bottom_card, top_card):
         # Breaking must be possible
         if not(self.is_possible_break_card(bottom_card, top_card)):
+            return False
+        if not self.is_legal_break_card(player, bottom_card, top_card):
+            # TODO player cheated
+            print(f"{player} tried to break illegally")
             return False
         self.table_cards[bottom_card] = top_card
         self.current_player.remove_cards([top_card])
         return True
+
+    # Test whether the break is a legal break
+    def is_legal_break_card(self, player, bottom_card, top_card):
+        return player == self.current_player
 
     # Test whether the bottom card can break the top card
     # with the current board position

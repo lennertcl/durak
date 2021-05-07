@@ -291,6 +291,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Some player breaks a card
     function on_breakcard(data){
+        if(data.player == username){
+            // Remove the cards from your hand if you
+            // threw them
+            document.getElementById(selected_cards[0]).remove();
+            // Clear the selected cards
+            selected_cards = [];
+        }
         // Get the bottom card on the table
         var pair = document.getElementById(data.bottomcard).parentElement;
         // Make the top card and put it on the table
@@ -307,13 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
             {'username': username,
              'bottomcard': bottom_card,
              'topcard': selected_cards[0]});
-        // TODO this should move to on_breakcard
-        // with a check if you are the current player
-        // so nothing happens if impossible breakcard
-        // Remove the card from your hand
-        document.getElementById(selected_cards[0]).remove();
-        // Clear the selected cards
-        selected_cards = [];
     }
 
     // When a user clicks the allow break cards button
