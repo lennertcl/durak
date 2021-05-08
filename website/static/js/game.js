@@ -426,6 +426,9 @@ document.addEventListener('DOMContentLoaded', () => {
             data.deckcount;
 
         update_current_player(data.newplayer);
+
+        // TODO this should be removed for all transfered players
+        var only_players = document.getElementById('onlyplayers');
     }
 
     function update_current_player(new_player){
