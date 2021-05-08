@@ -289,8 +289,8 @@ class DurakGame:
 
     # Player breaks the cards on the table:
     # Clear the table
-    def break_cards(self):
-        if not self.is_possible_break_cards():
+    def break_cards(self, player):
+        if not self.is_possible_break_cards(player):
             return False
         if not self.is_legal_break_cards():
             # TODO this player has cheated
@@ -299,20 +299,13 @@ class DurakGame:
         self.finish_round(has_broken=True)
         return True
 
-    # Indicate that the given player has confirmed
-    # that the current player can break
-    def allow_break_cards(self, player):
-        if player == self.next_player(self.current_player):
-            self.next_allows_break = True
-        if player == self.prev_player(self.current_player):
-            self.prev_allows_break = True
-
     # Checks if the neighboring players of
     # the current player have confirmed that
     # the current player can break
-    def is_possible_break_cards(self):
+    def is_possible_break_cards(self, player):
         return (self.next_allows_break and
-                self.prev_allows_break)
+                self.prev_allows_break and
+                self.current_player == player)
     
     # Checks if a set of the played cards can 
     # break the cards on table
@@ -335,9 +328,18 @@ class DurakGame:
                     return False
         return True
 
+    # Indicate that the given player has confirmed
+    # that the current player can break
+    def allow_break_cards(self, player):
+        if player == self.next_player(self.current_player):
+            self.next_allows_break = True
+        # No elif: if 2 players than next == prev
+        if player == self.prev_player(self.current_player):
+            self.prev_allows_break = True
+
     # Move a top card to another bottom card
-    def move_top_card(self, top_card, new_bottom_card):
-        if not self.is_possible_move_top_card(top_card, new_bottom_card):
+    def move_top_card(self, player, top_card, new_bottom_card):
+        if not self.is_possible_move_top_card(player, top_card, new_bottom_card):
             return False
         # Get the old bottom card and remove it's top card
         bottom_card = list(self.table_cards.keys())[
@@ -352,8 +354,9 @@ class DurakGame:
     # The given top card must be a top card, the
     # bottom card must be a bottom card without
     # a top card on top
-    def is_possible_move_top_card(self, top_card, new_bottom_card):
-        return (top_card in self.table_cards.values() and
+    def is_possible_move_top_card(self, player, top_card, new_bottom_card):
+        return (player == self.current_player and
+                top_card in self.table_cards.values() and
                 new_bottom_card in self.table_cards and
                 not self.table_cards[new_bottom_card])
 
@@ -364,8 +367,8 @@ class DurakGame:
     # Player takes the cards on table:
     # Add the given cards to the player's current cards
     # and clear the table
-    def take_cards(self):
-        if not self.is_possible_take_cards():
+    def take_cards(self, player):
+        if not self.is_possible_take_cards(player):
             return False
         cards = []
         for bottom, top in self.table_cards.items():
@@ -378,16 +381,17 @@ class DurakGame:
 
     # Taking cards is only possible if there is
     # at least 1 card on the table
-    def is_possible_take_cards(self):
-        return self.get_table_cards_count() > 0
+    def is_possible_take_cards(self, player):
+        return (player == self.current_player and
+                self.get_table_cards_count() > 0)
 
 
     # PASSING ON
 
 
     #pass on the cards with given cards of the players own cards
-    def pass_on(self, cards):
-        if not self.is_possible_pass_on(cards):
+    def pass_on(self, player, cards):
+        if not self.is_possible_pass_on(player, cards):
             return False
         if not self.is_legal_pass_on(cards):
             # TODO cheated
@@ -401,8 +405,8 @@ class DurakGame:
 
     # Pass on the cards making use of the trump card, without
     # passing on the trump card
-    def pass_on_using_trump(self):
-        if not self.is_possible_pass_on([]):
+    def pass_on_using_trump(self, player):
+        if not self.is_possible_pass_on(player, []):
             return False
         if not self.is_legal_pass_on_using_trump():
             # TODO cheated
@@ -414,7 +418,9 @@ class DurakGame:
     # The amount of cards passed should not exceed the
     # amount of cards of the player passing to
     # There should be no top cards when passing on
-    def is_possible_pass_on(self, cards):
+    def is_possible_pass_on(self, player, cards):
+        if player != self.current_player:
+            return False
         if (len(cards) + self.get_table_cards_count() >
            self.next_player(self.current_player).get_card_count()):
             return False

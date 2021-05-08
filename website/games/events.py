@@ -31,7 +31,7 @@ def leave(data):
 # Event when a user clicks start game button
 @socketio.on("startgame")
 def start_game(data):
-    game, player = get_game_and_player()
+    game, _ = get_game_and_player()
     game.start_game()
     event = {"event": "startgame"}
     emit('status', event, room=game.id)
@@ -54,10 +54,7 @@ def throw_cards(data):
 @socketio.on("takecards")
 def take_cards(data):
     game, player = get_game_and_player()
-    # Prevent other players from taking cards
-    if player != game.current_player:
-        return
-    game.take_cards()
+    game.take_cards(player)
     event = {"event": "takecards"}
     emit('move', event, room=game.id)
     emit_finish_round(game)
@@ -66,10 +63,7 @@ def take_cards(data):
 @socketio.on("breakcards")
 def break_cards(data):
     game, player = get_game_and_player()
-    # Prevent other players from breaking cards
-    if player != game.current_player:
-        return
-    is_broken = game.break_cards()
+    is_broken = game.break_cards(player)
     if is_broken:
         event = {"event": "breakcards"}
         emit('move', event, room=game.id)
@@ -95,12 +89,9 @@ def break_card(data):
 @socketio.on("movetopcard")
 def move_top_card(data):
     game, player = get_game_and_player()
-    # Prevent other players from moving top cards
-    if player != game.current_player:
-        return
     new_bottomcard = Card.from_str(data["new_bottomcard"])
     topcard = Card.from_str(data["topcard"])
-    is_moved = game.move_top_card(topcard, new_bottomcard)
+    is_moved = game.move_top_card(player, topcard, new_bottomcard)
     if is_moved:
         event = {"event": "movetopcard",
                 "new_bottomcard": data["new_bottomcard"],
@@ -111,13 +102,10 @@ def move_top_card(data):
 @socketio.on("passcards")
 def pass_cards(data):
     game, player = get_game_and_player()
-    # Prevent other players from passing cards
-    if player != game.current_player:
-        return
     # Translate string cards to actual cards
     cards = [Card.from_str(card_str) for 
              card_str in data["cards"]]
-    is_passed = game.pass_on(cards)
+    is_passed = game.pass_on(player, cards)
     if is_passed:
         event = {"event": "passcards", 
                 "player": session.get("username"),
@@ -129,10 +117,7 @@ def pass_cards(data):
 @socketio.on("passtrump")
 def pass_trump(data):
     game, player = get_game_and_player()
-    # Prevent other players from passing cards
-    if player != game.current_player:
-        return
-    is_passed = game.pass_on_using_trump()
+    is_passed = game.pass_on_using_trump(player)
     if is_passed:
         event = {"event": "passtrump", 
                 "newplayer": game.current_player.username}
