@@ -52,9 +52,12 @@ class Player:
 
     # Get the players and their seat number for the game
     # in correct order
-    def get_players_in_position(self, game, spectator=False):
+    # @param spectating
+    #   Indicates whether the player is a spectating player,
+    #   and thus does not take a seat in the game himself
+    def get_players_in_position(self, game, spectating=False):
         player_count = game.get_player_count()
-        if not spectator:
+        if not spectating:
             # The player should have the correct neighbors
             offset = game.players.index(self) + 1
             # This player does not count as another player,

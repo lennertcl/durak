@@ -51,13 +51,10 @@ def lobby(game_id):
 def game(game_id):
     try:
         game = gameManager.current_games[game_id]
-        print(game)
         player = game.get_player(current_user.username)
-        print(player)
-        other_players = player.get_players_in_position(game)
-        print(other_players)
+        spectating = player not in game.players
+        other_players = player.get_players_in_position(game, spectating=spectating)
     except KeyError as e:
-        print(e)
         abort(404)
     return render_template('game.html', game=game,
                 player=player,
