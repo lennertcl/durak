@@ -27,7 +27,10 @@ def join(game_id):
         game.add_player(current_user.username)
     except KeyError:
         abort(404)
-    return redirect(url_for('games.lobby', game_id=game.id), )
+    if game.is_in_progress:
+        # If the game is already in progress, spectating is possible
+        return redirect(url_for('games.game', game_id=game.id))
+    return redirect(url_for('games.lobby', game_id=game.id))
 
 @games.route("/game/lobby/<int:game_id>", methods=['GET', 'POST'])
 @login_required
@@ -48,9 +51,13 @@ def lobby(game_id):
 def game(game_id):
     try:
         game = gameManager.current_games[game_id]
+        print(game)
         player = game.get_player(current_user.username)
+        print(player)
         other_players = player.get_players_in_position(game)
+        print(other_players)
     except KeyError as e:
+        print(e)
         abort(404)
     return render_template('game.html', game=game,
                 player=player,

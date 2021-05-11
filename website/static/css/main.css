@@ -59,6 +59,10 @@
     text-overflow:clip;
 }
 
+.finished-player{
+    opacity: 0.5;
+}
+
 .current-player{
     color:blue;
 }

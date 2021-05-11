@@ -52,16 +52,22 @@ class Player:
 
     # Get the players and their seat number for the game
     # in correct order
-    def get_players_in_position(self, game):
-        # The player should have the correct neighbors
-        offset = game.players.index(self) + 1
+    def get_players_in_position(self, game, spectator=False):
         player_count = game.get_player_count()
+        if not spectator:
+            # The player should have the correct neighbors
+            offset = game.players.index(self) + 1
+            # This player does not count as another player,
+            # but he was counted as a player
+            player_count -= 1
+        else:
+            offset = 0
         # Seat positions for this game
-        positions = Player.POSITIONS[player_count - 1]
+        positions = Player.POSITIONS[player_count]
         other_players = []
         # Add every player and their seat number
-        for i in range(0, player_count - 1):
-            idx = (offset + i) % player_count
+        for i in range(0, player_count):
+            idx = (offset + i) % (player_count + 1)
             other_players.append((game.players[idx], 
                                   positions[i]))
         return other_players

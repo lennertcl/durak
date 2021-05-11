@@ -403,22 +403,33 @@ document.addEventListener('DOMContentLoaded', () => {
     function on_finish_round(data){
         // Clear all cards from the table
         table_cards.innerHTML = '';
-        // Reload the cards in the player's hand
-        for(var i = 0; i < data.cards.length; i++){
-            var card_id = "card" + data.cards[i];
-            if(!document.getElementById(card_id)) {
-                const card = make_card(card_id);
-                own_cards.append(card);
+        if(data.cards){
+            // Reload the cards in the player's hand
+            // Only if the player is not a spectator
+            for(var i = 0; i < data.cards.length; i++){
+                var card_id = "card" + data.cards[i];
+                if(!document.getElementById(card_id)) {
+                    const card = make_card(card_id);
+                    own_cards.append(card);
+                }
             }
         }
 
-        // Update card count of other players
+        // Update other players
         var other_players = document.getElementById('otherplayers').
             getElementsByTagName('div');
         for(var i = 0; i < other_players.length; i++){
             var name = other_players[i].id.replace('player', '');
-            count = document.getElementById('cardcount' + name);
-            count.innerHTML = data.cardcounts[name];
+            if(data.cardcounts[name]){
+                // The player is still in the game
+                // Update the card count
+                var count = document.getElementById('cardcount' + name);
+                count.innerHTML = data.cardcounts[name];
+            }else{
+                // The player has finished playing
+                var player = document.getElementById('player' + name);
+                player.classList.add('finished-player');
+            }
         }
 
         // Update card count of deck
@@ -427,8 +438,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         update_current_player(data.newplayer);
 
-        // TODO this should be removed for all transfered players
-        var only_players = document.getElementById('onlyplayers');
+        if (!data.cardcounts[username]){
+            // The buttons get removed for spectators
+            var only_players = document.getElementById('onlyplayers');
+            if(only_players){
+                only_players.remove();
+            }
+        }
     }
 
     function update_current_player(new_player){

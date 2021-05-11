@@ -41,6 +41,7 @@ class DurakGame:
         # Timestamp of start of this game
         # Used for garbage collection of old games
         self.timestamp = time()
+        self.is_in_progress = False
 
     # Return the number of players in the lobby
     def get_lobby_count(self):
@@ -120,6 +121,7 @@ class DurakGame:
 
         self.next_allows_break = False
         self.prev_allows_break = False
+        self.is_in_progress = True
 
     # If the deck is not empty, new cards are distributed
     # If the deck is empty, players that are finished are
@@ -131,13 +133,8 @@ class DurakGame:
     #   If false, the player has taken the cards.
     def finish_round(self, has_broken=True):
         self.table_cards.clear()
-        if not self.deck.is_empty():
-            self.distribute_new_cards()
-        # No else: need to check again because
-        # the deck might have become empty
-        if self.deck.is_empty():
-            self.transfer_finished_players()
         if self.is_finished():
+            self.is_in_progress = False
             # TODO ?
             pass
         # Update the current player
@@ -151,6 +148,12 @@ class DurakGame:
             # allowed to throw cards
             self.current_player = self.next_player(
                 self.next_player(self.current_player))
+        if not self.deck.is_empty():
+            self.distribute_new_cards()
+        # No else: need to check again because
+        # the deck might have become empty
+        if self.deck.is_empty():
+            self.transfer_finished_players()
         # At the beginning of each round the throwing
         # has not started yet
         self.throwing_started = False
@@ -236,6 +239,8 @@ class DurakGame:
     # the current player and the symbol of each card 
     # to be thrown has to be present already
     def is_legal_throw_cards(self, player, cards, is_first_throw=False):
+        if not cards:
+            return False
         if is_first_throw:
             # The player can only throw cards of the same symbol
             return (player == self.prev_player(self.current_player)

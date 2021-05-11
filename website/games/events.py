@@ -32,9 +32,11 @@ def leave(data):
 @socketio.on("startgame")
 def start_game(data):
     game, _ = get_game_and_player()
-    game.start_game()
-    event = {"event": "startgame"}
-    emit('status', event, room=game.id)
+    if (game.get_lobby_count() > 1 and
+        not game.is_in_progress):
+        game.start_game()
+        event = {"event": "startgame"}
+        emit('status', event, room=game.id)
 
 # Event when a user throws cards
 @socketio.on("throwcards")
@@ -141,8 +143,12 @@ def emit_finish_round(game):
                 for player in game.players}
             }
     for player in game.players:
+        # Players that are playing get information
+        # about the new cards that have been dealt
         cards = [str(card) for card in player.cards]
         event.update({"cards": cards})
+        emit('status', event, room=player.sid)
+    for player in game.lobby:
         emit('status', event, room=player.sid)
 
 def get_game_and_player():
