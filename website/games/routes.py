@@ -59,4 +59,5 @@ def game(game_id):
     return render_template('game.html', game=game,
                 player=player,
                 current_player=game.current_player.username,
-                other_players=other_players)
+                other_players=other_players,
+                spectating=spectating)

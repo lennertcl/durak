@@ -44,27 +44,26 @@
                     {{ game.deck.get_card_count() }}
                 </p>
             </div>
-            <!-- TODO This should only show when a player is player,
-                 not when a player is spectating (in the lobby)
-                 needs to be changed in game.js on_finish_round -->
-            <div id="onlyplayers">
-                <!-- This only shows up on current player's screen -->
-                <div class="current-player-buttons" style="display:none;" id="currentplayerbuttons">
-                    <button class="btn btn-success" id="breakcards">Break cards</button>
-                    <button class="btn btn-danger" id="takecards">Take cards</button>
-                    <button class="btn btn-info" id="passcards">Pass using cards</button>
-                    <button class="btn btn-secondary" id="passtrump">Pass using trump</button>
+            {% if not spectating %}
+                <div id="onlyplayers">
+                    <!-- This only shows up on current player's screen -->
+                    <div class="current-player-buttons" style="display:none;" id="currentplayerbuttons">
+                        <button class="btn btn-success" id="breakcards">Break cards</button>
+                        <button class="btn btn-danger" id="takecards">Take cards</button>
+                        <button class="btn btn-info" id="passcards">Pass using cards</button>
+                        <button class="btn btn-secondary" id="passtrump">Pass using trump</button>
+                    </div>
+                    <button class="btn btn-success allow-break-button" id="allowbreakbutton" 
+                        disabled="1">Allow break</button>
+                    <div class="cards own-cards" id="owncards">
+                        {% for card in player.cards %}
+                            <img class="card"
+                                src="{{ url_for('static', filename='images/' + card.get_image()) }}"
+                                id="card{{card}}"/>
+                        {% endfor %}
+                    </div>
                 </div>
-                <button class="btn btn-success allow-break-button" id="allowbreakbutton" 
-                    disabled="1">Allow break</button>
-                <div class="cards own-cards" id="owncards">
-                    {% for card in player.cards %}
-                        <img class="card"
-                            src="{{ url_for('static', filename='images/' + card.get_image()) }}"
-                            id="card{{card}}"/>
-                    {% endfor %}
-                </div>
-            </div>
+            {% endif %}
         </div>
 <div class="row">
     <div class="col-md-4">
