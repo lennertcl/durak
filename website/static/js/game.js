@@ -143,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }else{
-                // TODO Show error message to user
                 console.log("No cards / more than 1 card selected when breaking");
             }
         }
@@ -176,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove from the player list
         p = document.getElementById("sideplayer" + data.username);
         document.querySelector('#players_list').removeChild(p);
-        // TODO remove from the table
     }
 
 
@@ -275,7 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // BREAKING CARDS
 
-    // TODO fix bug when another player breaks a card to cheat
 
     // Some player breaks the cards
     function on_breakcards(data){
