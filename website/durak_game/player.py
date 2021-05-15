@@ -1,5 +1,18 @@
-# Class representing a player of the game
+from __future__ import annotations
+
 class Player:
+    """Class representing players of the game
+
+    Attributes:
+        username: str
+            The username of the player.
+            This is unique for each player. 
+        cards: List[Card]
+            The cards of this player.
+        sid: str
+            The session id of this player.
+            Gets set when player joins a game.
+    """
 
     # Mapping the number of players on the table to
     # the positions the players should be at
@@ -13,14 +26,10 @@ class Player:
         7: (1, 2, 3, 4, 5, 6, 7),
     }
 
-    # Initialize a player
-    # @param username
-    #   The username of the player
-    def __init__(self, username):
+    def __init__(self, username: str):
+        """ Initialize a player """
         self.username = username
         self.cards = []
-        # This gets set when user joins a game
-        self.sid = None
 
     def __repr__(self):
         return "Player {}".format(self.username)
@@ -28,34 +37,33 @@ class Player:
     def __str__(self):
         return "{}".format(self.username)
     
-    # Usernames are unique
     def __eq__(self, other):
         return self.username == other.username
 
-    # Add the given cards to the player's cards
-    # @param new_cards
-    #   List of cards to add
-    def add_cards(self, new_cards):
+    def add_cards(self, new_cards: list[Card]):
+        """ Add the given cards to the player's cards """
         self.cards += new_cards
 
-    # Remove the given cards from the player's
-    # cards
-    # @param cards
-    #   List of cards to remove
-    def remove_cards(self, cards):
+    def remove_cards(self, cards: list[Card]):
+        """ Remove the given cards from the player's cards """
         for card in cards:
             self.cards.remove(card)
 
-    # Get the amount of cards of this player
-    def get_card_count(self):
+    def get_card_count(self) -> int:
         return len(self.cards)
 
-    # Get the players and their seat number for the game
-    # in correct order
-    # @param spectating
-    #   Indicates whether the player is a spectating player,
-    #   and thus does not take a seat in the game himself
-    def get_players_in_position(self, game, spectating=False):
+    def get_players_in_position(self, game: DurakGame, spectating: bool = False
+                            ) -> List[Tuple[Player, int]]:
+        """ Get the players and their seat number for the game in correct order
+
+        Args:
+            game: DurakGame
+                The game to position the players for
+            spectating: bool, optional
+                Indicates whether the player is a spectating player,
+                and thus does not take a seat in the game himself
+                Defaults to False.
+        """
         player_count = game.get_player_count()
         if not spectating:
             # The player should have the correct neighbors

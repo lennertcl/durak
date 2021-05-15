@@ -1,8 +1,15 @@
-# Class representing a playing card
+from __future__ import annotations
+
 class Card:
+    """Class representing a playing card
+
+        Attributes:
+            suit: str
+                The suit of the card
+            symbol: int
+                The symbol of the card
+    """
     # Constants representing suits
-    #   'H' for hearts, 'D' for diamonds,
-    #   'C' for clubs, 'S' for spades
     HEARTS = "H"
     CLUBS = "C"
     DIAMONDS = "D"
@@ -11,8 +18,6 @@ class Card:
     SUITS = [HEARTS, CLUBS, DIAMONDS, SPADES]
 
     # Constants representing symbols
-    #   2-10, 11 for Jack, 12 for Queen
-    #   13 for King, 14 for Ace
     TWO = 2
     THREE = 3
     FOUR = 4
@@ -30,81 +35,98 @@ class Card:
     SYMBOLS = [TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT,
                NINE, TEN, JACK, QUEEN, KING, ACE]
 
-    # Init a card from a string representation
     @classmethod
-    def from_str(cls, card_str):
+    def from_str(cls, card_str: str) -> self:
+        """Initialize a card from a string
+
+        Examples: 
+            Card.from_str("7H") == Card(Card.HEARTS, Card.SEVEN)
+            Card.from_str("Card7H") == Card(Card.HEARTS, Card.SEVEN)
+        
+        Args:
+            card_str: str
+                String representation of the card
+
+        Returns: Card
+        """
         card_str = card_str.upper().replace("CARD", "")
         suit = card_str[-1]
         symbol = int(card_str[:-1])
         return cls(suit, symbol)
 
-    # Init a card
-    # @param suit
-    #   The suit of the card
-    #   Card.HEARTS, Card.CLUBS, Card.DIAMONDS, Card.CLUBS
-    # @param symbol
-    #   The symbol/number of the card
-    #   Card.TWO,.., Card.TEN, Card.JACK, Card.QUEEN,
-    #   Card.KING, Card.ACE
-    def __init__(self, suit, symbol):
+    def __init__(self, suit: str, symbol: int):
+        """Initialize a card
+
+        Args:
+            suit: str
+                The suit of the card
+            symbol: int
+                The symbol of the card
+        """
         self.suit = suit
         self.symbol = symbol
     
-    # Representation of the card
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Card {0} of {1}".format(
                     self.symbol, self.suit)
 
-    # String notation of the card
-    def __str__(self):
-        return "{0}{1}".format(self.symbol,
-                               self.suit)
+    def __str__(self) -> str:
+        """Return a string representation of the card
 
-    # Equal if both symbol and suit are equal
-    def __eq__(self, other):
+        Example: Card(Card.HEARTS, Card.SEVEN) -> '7H'
+        """
+        return "{0}{1}".format(self.symbol, self.suit)
+
+    def __eq__(self, other: Card) -> bool:
+        """Test for equality
+
+        True if suit and symbol are equal
+        """
         if isinstance(other, Card):
             return (self.symbol == other.symbol and
                     self.suit == other.suit)
         return False
 
-    # Less than
-    # A card is less than another if its symbol is
-    # less than the other card's symbol
-    def __lt__(self, other):
+    def __lt__(self, other: Card) -> bool:
+        """Test for less than
+
+        True if symbol is less than the other symbol
+        """
         return self.symbol < other.symbol
 
-    # Less than or equal
-    # A card is less than or equal to another if 
-    # its symbol is less than or equal to the other
-    # card's symbol
     def __le__(self, other):
+        """Test for less than or equal
+
+        True if symbol is less than or equal to the other symbol
+        """
         return self.symbol <= other.symbol
     
-    # Greater than
-    # A card is greater than another if its symbol is
-    # greater than the other card's symbol
     def __gt__(self, other):
+        """Test for greater than
+
+        True if symbol is greater than the other symbol
+        """
         return self.symbol > other.symbol
 
-    # Greater than or equal
-    # A card is greater than or equal to another if 
-    # its symbol is greater than or equal to the other
-    # card's symbol
     def __ge__(self, other):
+        """Test for greater than or equal
+
+        True if symbol is greater than or equal to the other symbol
+        """
         return self.symbol >= other.symbol
 
     def __hash__(self):
         return hash(self.suit) + hash(self.symbol)
     
-    #return the suit of the card
     def get_suit(self):
         return self.suit
     
-    #return the symbol of the card
     def get_symbol(self):
         return self.symbol
     
-    # Return the image file of this card
-    # e.g. '7H.png' for 7 of hearts
     def get_image(self):
+        """Return the image file of this card
+
+        Example: Card(Card.HEARTS, Card.SEVEN) -> '7H.png'
+        """
         return "{0}{1}.png".format(self.symbol, self.suit)

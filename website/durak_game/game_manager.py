@@ -3,8 +3,16 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from .durak import DurakGame
 
-# Class to manage current games for the site
 class GameManager:
+    """ Class to manage current games for the site 
+
+    Attributes:
+        current_id: int
+            The current id for the next game
+        current_games: dict(int, DurakGame)
+            Key: id, Value: game
+            The current games for the site
+    """
 
     # Maximum ID of a game (restarts at 1)
     MAX_ID = 10000
@@ -15,48 +23,38 @@ class GameManager:
     # by the garbage collector
     GARBAGE_COLLECTOR_INTERVAL = 60
 
-    # Initialize the game manager
     def __init__(self):
-        # 4 digit integer id
-        #   Random initial id
+        """ Initialize a game manager """
         self.current_id = 3865
-        # Dictionary of current games
-        #   key: id, value: game
         self.current_games = {}
-        # Start the garbage collector removing
-        # games that have outlived the game time
         self.start_garbage_collector()
 
-    # Create a new DurakGame
-    def create_game(self, name):
-        # Increment the id
+    def create_game(self, name: str) -> DurakGame:
+        """ Create a new durakgame with given name 
+
+        Updates the current id.
+        Creates the game, adds it to the current games and returns it.
+
+        Returns: DurakGame
+        """
         id = self.current_id
         self.current_id = (self.current_id + 1) % GameManager.MAX_ID
-        # Create the game and add to current games
         game = DurakGame(id, name)
         self.current_games[id] = game
         return game
 
-    # Delete a game
-    def remove_game(self, game_id):
+    def remove_game(self, game_id: int):
         del self.current_games[game_id]
 
-    # Remove all games that were started more than one
-    # hour ago
     def collect_garbage(self):
-        print("Removing garbage games")
-        print(self.current_games)
+        """ Removes all games that have passed the lifetime threshold """
         curr_time = time()
         for game_id, game in list(self.current_games.items()):
-            print(game.timestamp)
-            print(curr_time)
             if (game.timestamp + GameManager.GAME_TIME < curr_time):
                 del self.current_games[game_id]
-        print(self.current_games)
 
-    # Schedules a background job to delete games
-    # at set interval
     def start_garbage_collector(self):
+        """ Schedule a background job to delete games at set interval """
         sched = BackgroundScheduler(daemon=True)
         sched.add_job(self.collect_garbage, trigger="interval",
                       minutes=GameManager.GARBAGE_COLLECTOR_INTERVAL)
