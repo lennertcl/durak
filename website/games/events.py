@@ -32,8 +32,12 @@ def leave(data):
 @socketio.on("startgame")
 def start_game(data):
     game, _ = get_game_and_player()
-    if (game.get_lobby_count() > 1 and
-        not game.is_in_progress):
+    print(game.get_lobby_count())
+    print(game.get_player_count())
+    print(game.is_in_progress)
+    if (game.get_lobby_count() + game.get_player_count() > 1 
+        and not game.is_in_progress):
+        print("here")
         game.start_game()
         event = {"event": "startgame"}
         emit('status', event, room=game.id)

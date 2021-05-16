@@ -26,6 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
             break;
             case 'finishround':
                 on_finish_round(data);
+            break;
+            case 'startgame':
+                location.reload();
+            break;
         }
     });
 
@@ -84,13 +88,17 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('leave', {'username': username});
     };
 
+    document.querySelector('#start_button').onclick = () => {
+        socket.emit('startgame', {})
+    }
+
     // TODO refactor own_cards.onclick and table_cards.onclick
     // into functions
 
     // When user clicks one of their own cards
     own_cards.onclick = (event) => {
         let target = event.target;
-        if (!target.id.includes("card")){
+        if (!target.id.includes('card')){
             // Don't select the div
             return;
         }
@@ -106,13 +114,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // When user clicks the cards on the table
     table_cards.onclick = (event) => {
+        // Prevent reloading
+        event.preventDefault();
         let target = event.target;
         if(target.id == table_cards.id){
             // User throws new cards onto table
             if(current_player != username){
                 // Only other players can throw cards
                 try_throwcards();
-                console.log(selected_cards);
             }
         }
         else{
@@ -142,11 +151,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         target.classList.add('selected-card');
                     }
                 }
-            }else{
-                console.log("No cards / more than 1 card selected when breaking");
             }
         }
-
     }
 
 
