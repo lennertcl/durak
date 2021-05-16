@@ -739,12 +739,18 @@ class DurakGame:
         return card.get_suit() == self.trump
     
     def next_player(self, player: Player) -> Player:
-        idx = self.players.index(player)
-        return self.players[(idx + 1) % len(self.players)]
+        try:
+            idx = self.players.index(player)
+            return self.players[(idx + 1) % len(self.players)]
+        except ValueError:
+            return None
 
     def prev_player(self, player: Player) -> Player:
-        idx = self.players.index(player)
-        return self.players[idx - 1]
+        try:
+            idx = self.players.index(player)
+            return self.players[idx - 1]
+        except ValueError:
+            return None
 
     def is_finished(self) -> bool:
         return self.get_player_count() == 1
