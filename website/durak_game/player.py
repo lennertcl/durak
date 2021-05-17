@@ -17,6 +17,7 @@ class Player:
     # Mapping the number of players on the table to
     # the positions the players should be at
     POSITIONS = {
+        0: (),
         1: (4,),
         2: (2, 6),
         3: (2, 4, 6),
