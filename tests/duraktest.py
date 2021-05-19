@@ -171,7 +171,7 @@ def test_throw_impossible_first(game):
         assert card not in game.table_cards
 
 
-# BREAKING CARDS
+# BREAKING 1 CARD
 
 
 # POSSIBLE
@@ -214,6 +214,89 @@ def test_legal_break_card_illegal_player(game):
     game.start_game()
     
     assert not game.is_legal_break_card(game.prev_player(game.current_player))
+
+# PERFORMING BREAK
+
+
+# BREAKING CARDS
+
+# POSSIBLE
+
+def test_possible_break_cards_possible(game):
+    """ Possible break """
+    game.start_game()
+    p1 = game.current_player
+    p2 = game.next_player(p1)
+    p3 = game.prev_player(p1)
+
+    game.allow_break_cards(p2)
+    game.allow_break_cards(p3)
+
+    assert game.is_possible_break_cards(p1)
+
+def test_possible_break_cards_impossible_not_allowed(game):
+    """ A player has not allowed yet """
+    game.start_game()
+    assert not game.is_possible_break_cards(game.current_player)
+
+def test_possible_break_cards_impossible_player(game):
+    """ The player is not the current player """
+    game.start_game()
+    p = game.next_player(game.current_player)
+    assert not game.is_possible_break_cards(p)
+
+# LEGAL
+
+def test_legal_break_cards_legal_regular(game):
+    """ Legal break cards without trump"""
+    game.start_game()
+
+    game.table_cards = {Card(Card.HEARTS, Card.SEVEN): Card(Card.HEARTS, Card.EIGHT)}
+
+    assert game.is_legal_break_cards()
+
+def test_legal_break_cards_legal_trump(game):
+    """ Legal break cards with trump"""
+    game.start_game()
+    game.trump = Card.HEARTS
+
+    game.table_cards = {Card(Card.CLUBS, Card.SEVEN): Card(Card.HEARTS, Card.EIGHT)}
+
+    assert game.is_legal_break_cards()
+
+def test_legal_break_cards_illegal_no_top(game):
+    """ A bottom card does not have a top card """
+    game.start_game()
+
+    game.table_cards = {Card(Card.CLUBS, Card.SEVEN): None}
+
+    assert not game.is_legal_break_cards()
+
+def test_legal_break_cards_illegal_not_higher(game):
+    """ A card is broken by a card that is not higher """
+    game.start_game()
+
+    game.table_cards = {Card(Card.HEARTS, Card.EIGHT): Card(Card.HEARTS, Card.SEVEN)}
+
+    assert not game.is_legal_break_cards()
+
+def test_legal_break_cards_illegal_other_suit(game):
+    """ A card is broken by a card of another suit (not trump) """
+    game.start_game()
+    game.trump = Card.CLUBS
+
+    game.table_cards = {Card(Card.HEARTS, Card.SEVEN): Card(Card.DIAMONDS, Card.EIGHT)}
+
+    assert not game.is_legal_break_cards()
+
+def test_legal_break_cards_illegal_lower_trump(game):
+    """ A trump card is broken by a lower trump card """
+    game.start_game()
+    game.trump = Card.HEARTS
+
+    game.table_cards = {Card(Card.HEARTS, Card.EIGHT): Card(Card.HEARTS, Card.SEVEN)}
+
+    assert not game.is_legal_break_cards()
 
 # PERFORMING BREAK
 
@@ -289,7 +372,5 @@ def test_take_no_top(game):
 
     assert p2.get_card_count() == 7
     assert p1.get_card_count() == 6
-
-# Test taking cards with top cards
 
 """
