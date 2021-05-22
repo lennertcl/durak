@@ -37,7 +37,6 @@ def start_game(data):
     print(game.is_in_progress)
     if (game.get_lobby_count() + game.get_player_count() > 1 
         and not game.is_in_progress):
-        print("here")
         game.start_game()
         event = {"event": "startgame"}
         emit('status', event, room=game.id)
