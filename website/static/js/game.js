@@ -179,8 +179,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Some player leaves the game
     function on_left(data){
         // Remove from the player list
-        p = document.getElementById("sideplayer" + data.username);
-        document.querySelector('#players_list').removeChild(p);
+        var p = document.getElementById("sideplayer" + data.username);
+        p.remove();
+        // Remove from the table
+        p = document.getElementById("player" + data.username);
+        if (p){
+            p.remove();
+        }
     }
 
 

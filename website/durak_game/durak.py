@@ -102,6 +102,32 @@ class DurakGame:
             player = Player(username)
             self.lobby.append(player)
 
+    def remove_player(self, player: Player) -> bool:
+        """Remove a player from the game
+
+        If the player was inside the lobby, he is removed from the lobby. 
+        If the player was playing the current game, he is removed from
+        the game.
+        If the player was the current player, the round is finished as
+        if the leaving player took the cards on the table
+
+        Args:
+            player: Player
+                The player leaving the game
+
+        Returns: bool
+            Indicates whether the game has gone to the next round
+        """
+        is_next_round = False
+        if player in self.lobby:
+            self.lobby.remove(player)
+        if player in self.players:
+            if player == self.current_player:
+                self.finish_round(has_broken=False)
+                is_next_round = True
+            self.players.remove(player)
+        return is_next_round
+
 
     # GAME AND ROUNDS
 
