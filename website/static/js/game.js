@@ -305,6 +305,11 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById(selected_cards[0]).remove();
             // Clear the selected cards
             selected_cards = [];
+        }else{
+            // Edit the amount of cards of the player breaking
+            var player_count = document.
+                getElementById('cardcount' + current_player);
+            player_count.innerHTML = parseInt(player_count.innerHTML) - 1;
         }
         // Get the bottom card on the table
         var pair = document.getElementById(data.bottomcard).parentElement;
@@ -363,11 +368,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Some player passed using cards
     function on_passcards(data){
+        var amount = data.cards.length;
         if (data.player == username){
             do_passcards();
+        }else{
+            // Edit the amount of cards of the player passing on
+            var player_count = document.
+                getElementById('cardcount' + current_player);
+            player_count.innerHTML = parseInt(player_count.innerHTML)
+                                     - amount;
         }
         // Add the cards to the table
-        for(var i = 0; i < data.cards.length; i++){
+        for(var i = 0; i < amount; i++){
             // Create a new bottom-top card pair
             const pair = document.createElement('div');
             pair.className = "table-card-pair";
