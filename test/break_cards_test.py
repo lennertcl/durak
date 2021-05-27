@@ -196,3 +196,117 @@ def test_legal_break_cards_illegal_lower_trump(game):
 
 # PERFORMING BREAK CARDS
 # TODO 
+
+
+# ALLOWING BREAK CARDS
+
+
+def test_allow_break_cards_regular(game):
+    """ Regular scenario of allowing to break cards """
+    game.start_game()
+    p1 = game.prev_player(game.current_player)
+    p2 = game.next_player(game.current_player)
+
+    game.allow_break_cards(p1)
+    game.allow_break_cards(p2)
+
+    assert game.next_allows_break
+    assert game.prev_allows_break
+
+def test_allow_break_cards_other_player(game):
+    """ An irrelevant player allows break cards """
+    game.start_game()
+    p = game.current_player
+
+    game.allow_break_cards(p)
+
+    assert not game.next_allows_break
+    assert not game.prev_allows_break
+
+def test_allow_break_cards_same_player(game):
+    """ The next player and the previous player are the same """
+    game.remove_player(game.lobby[0])
+    game.remove_player(game.lobby[0])
+    game.start_game()
+    p = game.next_player(game.current_player)
+
+    game.allow_break_cards(p)
+
+    assert game.next_allows_break
+    assert game.prev_allows_break
+
+
+# MOVE TOP CARD
+
+
+# POSSIBLE
+
+
+def test_possible_move_top_card_possible(game):
+    """ Moving the top card is possible """
+    game.start_game()
+    p = game.current_player
+    game.table_cards = {
+        Card(Card.CLUBS, Card.SEVEN): Card(Card.HEARTS, Card.NINE),
+        Card(Card.HEARTS, Card.EIGHT): None
+    }
+
+    assert game.is_possible_move_top_card(p,
+        top_card=Card(Card.HEARTS, Card.NINE),
+        new_bottom_card=Card(Card.HEARTS, Card.EIGHT))
+
+
+def test_possible_move_top_card_impossible_player(game):
+    """ The player is not the current player """
+    game.start_game()
+    p = game.next_player(game.current_player)
+    game.table_cards = {
+        Card(Card.CLUBS, Card.SEVEN): Card(Card.HEARTS, Card.NINE),
+        Card(Card.HEARTS, Card.EIGHT): None
+    }
+
+    assert not game.is_possible_move_top_card(p,
+        top_card=Card(Card.HEARTS, Card.NINE),
+        new_bottom_card=Card(Card.HEARTS, Card.EIGHT))
+
+def test_possible_move_top_card_impossible_top_card(game):
+    """ The top card is not on the table as a top card """
+    game.start_game()
+    p = game.current_player
+    game.table_cards = {
+        Card(Card.CLUBS, Card.SEVEN): Card(Card.HEARTS, Card.NINE),
+        Card(Card.HEARTS, Card.EIGHT): None
+    }
+
+    assert not game.is_possible_move_top_card(p,
+        top_card=Card(Card.HEARTS, Card.TEN),
+        new_bottom_card=Card(Card.HEARTS, Card.EIGHT))
+
+def test_possible_move_top_card_impossible_bottom_card(game):
+    """ The bottom card is not on the table as a bottom card """
+    game.start_game()
+    p = game.current_player
+    game.table_cards = {
+        Card(Card.CLUBS, Card.SEVEN): Card(Card.HEARTS, Card.NINE)
+    }
+
+    assert not game.is_possible_move_top_card(p,
+        top_card=Card(Card.HEARTS, Card.NINE),
+        new_bottom_card=Card(Card.HEARTS, Card.EIGHT))
+
+def test_possible_move_top_card_impossible_already_on_top(game):
+    """ The bottom card already has another card on top """
+    game.start_game()
+    p = game.current_player
+    game.table_cards = {
+        Card(Card.CLUBS, Card.SEVEN): Card(Card.HEARTS, Card.NINE),
+        Card(Card.HEARTS, Card.EIGHT): Card(Card.HEARTS, Card.TEN)
+    }
+
+    assert not game.is_possible_move_top_card(p,
+        top_card=Card(Card.HEARTS, Card.TEN),
+        new_bottom_card=Card(Card.HEARTS, Card.EIGHT))
+
+
+# PERFORMING MOVE TOP CARD
+# TODO

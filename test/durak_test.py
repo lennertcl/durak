@@ -30,3 +30,7 @@ def test_lobby(game):
 
 # FINISH ROUND
 # TODO
+
+
+# REMOVE PLAYERS
+# TODO
