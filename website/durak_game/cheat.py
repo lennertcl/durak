@@ -1,48 +1,114 @@
+from __future__ import annotations
 from time import time
 
+
 class Cheat():
-    """ Class containing information about a cheat 
+    """ Abstract class containing information about a cheat
 
     Attributes:
+        player: Player
+            The player performing the cheat
         finish_time: int
             The time in seconds after which a cheat cannot be reverted anymore
-        cheat_type: int
-            The type of the cheat
-        revert_info : TODO
-            Information necessary to revert this cheat
+        cheated_cards: dict(Player: list[Card])
+            Dictionary holding information about every card that was thrown
+            as a follow up cheat to this cheat (or follow ups of this cheat...)
     """
 
-    # Different types of cheats
-    STEAL_TRUMP = 1
-    PUT_INTO_DECK = 2
-    THROW = 3
-    PASS_CARD = 4
-    PASS_TRUMP = 5
-    BREAK = 6
-
-    # Seconds before a cheat cannot be reverted
-    # anymore
+    # Seconds before a cheat cannot be reverted anymore
     DURATION = 5
 
-    def __init__(self, cheat_type: int, revert_info):
+    def __init__(self, player: Player):
         """ Initialize a cheat """
+        self.player = player
         self.finish_time = time() + Cheat.DURATION
-        self.cheat_type = cheat_type
-        self.revert_info = revert_info
+        self.cheated_cards = {}
+
+    def add_follow_up_cards(self, player: Player, cards: list[Card]):
+        """ Add cards to the dict of cards as follow up cheats for the cheat
+
+        The cards are added into the dict of cheated cards.
+
+        Args:
+            player: Player
+                The player throwing the cards
+            cards: list[Card]
+                The cards the player has thrown
+        """
+        if self.cheated_cards[player]:
+            self.cheated_cards[player] += cards
+        else:
+            self.cheated_cards[player] = cards
+
+    def __repr__(self):
+        return f"Cheat ({self.player})"
 
 
-"""
-NECESSARY REVERT INFO
+class StealTrumpCard(Cheat):
+    """ Class representing the stealing trump card cheat
 
-STEALING TRUMP CARD
-    Revert info initially contains only the old trump card
-    If this card is thrown into the game, further info is needed about
-    other cards being thrown into the game
-PUTTING CARDS INTO THE DECK
-    Revert info is a list of cards
-    put into the deck
-THROWING ILLEGAL CARDS
-PASSING WITH ILLEGAL CARDS
-PASSING WITHOUT HAVING TRUMP
-BREAKING WITH ILLEGAL CARDS
-"""
+    Attributes:
+        old_trump_card: Card
+            The old (stolen) trump card
+    """
+
+    def __init__(self, player: Player, old_trump_card: Card):
+        Cheat.__init__(self, player)
+        self.old_trump_card = old_trump_card
+
+    def __repr__(self):
+        return Cheat.__repr__(self) + " (steal trump card)"
+
+
+class PutIntoDeck(Cheat):
+    """ Class representing the putting cards into the deck cheat
+
+    Attributes:
+        cards_in_deck: list[Card]
+            The cards put into the deck
+    """
+
+    def __init__(self, player: Player, cards_in_deck: list[Card]):
+        Cheat.__init__(self, player)
+        self.cards_in_deck = cards_in_deck
+
+    def __repr__(self):
+        return Cheat.__repr__(self) + " (put into deck)"
+
+
+class ThrowIllegalCards(Cheat):
+    """ Class representing the throwing illegal cards cheat """
+
+    def __init__(self, player: Player, cards: list[Card]):
+        Cheat.__init__(self, player)
+        self.cheated_cards[player] = cards
+
+    def __repr__(self):
+        return Cheat.__repr__(self) + " (throw illegal cards)"
+
+
+class PassIllegalCards(Cheat):
+    """ Class representing the passing with illegal cards cheat """
+
+    def __init__(self, player: Player, cheated_cards: list[Card]):
+        Cheat.__init__(self, player)
+        self.cheated_cards[player] = cheated_cards
+
+    def __repr__(self):
+        return Cheat.__repr__(self) + " (pass illegal cards)"
+
+
+class BreakIllegalCards(Cheat):
+    """ Class representing the breaking with illegal cards cheat
+
+    Attributes:
+        table_cards: dict(Card: Card)
+            The table cards of the game on the moment of breaking cards
+    """
+
+    def __init__(self, player: Player, table_cards: dict[Card, Card]):
+        Cheat.__init__(self, player)
+        self.table_cards = table_cards
+
+    def __repr__(self):
+        return Cheat.__repr__(self) + " (break illegal cards)"
