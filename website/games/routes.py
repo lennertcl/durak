@@ -1,5 +1,5 @@
 from flask import (render_template, url_for, redirect, 
-                   abort, session)
+                   abort, session, flash)
 from flask_login import current_user, login_required
 from website import db, gameManager, socketio
 from website.games.forms import GameForm
@@ -22,6 +22,9 @@ def new_game():
 def join(game_id):
     try:
         game = gameManager.current_games[game_id]
+        if game.is_full():
+            flash("The game is full.", "danger")
+            return redirect(url_for('main.home'))
         session["room"] = game_id
         session["username"] = current_user.username
         game.add_player(current_user.username)

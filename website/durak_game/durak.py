@@ -44,6 +44,8 @@ class DurakGame:
                 Indicates whether the game is currently in progress
     """
 
+    MAX_PLAYERS = 8
+
     def __init__(self, id: int, name: str):
         """ Initialize a game
 
@@ -782,6 +784,10 @@ class DurakGame:
 
     def is_finished(self) -> bool:
         return self.get_player_count() == 1
+    
+    def is_full(self) -> bool:
+        return (self.get_player_count() + self.get_lobby_count() >=
+                DurakGame.MAX_PLAYERS)
 
     def get_lowest_card(self) -> int:
         """Get the lowest card for this game
