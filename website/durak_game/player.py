@@ -12,6 +12,8 @@ class Player:
         sid: str
             The session id of this player.
             Gets set when player joins a game.
+        trump_suit: Card.suit
+            The current suit for the game.
     """
 
     # Mapping the number of players on the table to
@@ -31,6 +33,7 @@ class Player:
         """ Initialize a player """
         self.username = username
         self.cards = []
+        self.trump_suit = None
 
     def __repr__(self):
         return "Player {}".format(self.username)
@@ -41,14 +44,29 @@ class Player:
     def __eq__(self, other):
         return self.username == other.username
 
+    def sort_cards(self):
+        suit = []
+        if self.trump_suit is None:
+            self.cards.sort()
+        else:
+            for card in self.cards:
+                if card.suit == self.trump_suit:
+                    suit.append(card)
+                    self.cards.remove(card)
+            self.cards.sort()
+            suit.sort()
+            self.cards += suit
+
     def add_cards(self, new_cards: list[Card]):
         """ Add the given cards to the player's cards """
         self.cards += new_cards
+        self.sort_cards()
 
     def remove_cards(self, cards: list[Card]):
         """ Remove the given cards from the player's cards """
         for card in cards:
             self.cards.remove(card)
+        self.sort_cards()
 
     def get_card_count(self) -> int:
         return len(self.cards)

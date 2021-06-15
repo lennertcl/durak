@@ -158,14 +158,14 @@ class DurakGame:
         self.deck = Deck(self.get_lowest_card())
         self.deck.shuffle()
 
-        for player in self.players:
-            cards = [self.deck.cards.pop() 
-                    for _ in range(cards_per_player)]
-            player.add_cards(cards)
-
         self.trump_card = self.deck.cards.pop()
         self.trump = self.trump_card.get_suit()
         self.deck.add_card(self.trump_card)
+        for player in self.players:
+            cards = [self.deck.cards.pop() 
+                    for _ in range(cards_per_player)]
+            player.trump_suit = self.trump
+            player.add_cards(cards)
 
         starting_player = self.players[0]
         lowest_trump = Card.ACE + 1
