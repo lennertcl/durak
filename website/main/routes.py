@@ -14,8 +14,8 @@ def home():
         except KeyError:
             flash("No game found with this code", "danger")
 
-    return render_template("home.html", form=form)
+    return render_template("main/home.html", form=form)
 
 @main.route("/rules")
 def rules():
-    return render_template("rules.html")
+    return render_template("main/rules.html")

@@ -14,7 +14,7 @@ def new_game():
         game = gameManager.create_game(form.name.data)
         return redirect(url_for('games.join', game_id=game.id))
 
-    return render_template('create_game.html', title='New Game',
+    return render_template('game/create_game.html', title='New Game',
                            form=form, legend='New Game')
 
 @games.route("/game/join/<int:game_id>")
@@ -46,7 +46,7 @@ def lobby(game_id):
         game = gameManager.current_games[game_id]
     except KeyError:
         abort(404)
-    return render_template("game_lobby.html", game=game, 
+    return render_template("game/game_lobby.html", game=game, 
                 username=current_user.username)
 
 @games.route("/game/<int:game_id>")
@@ -59,7 +59,7 @@ def game(game_id):
         other_players = player.get_players_in_position(game, spectating=spectating)
     except KeyError as e:
         abort(404)
-    return render_template('game.html', game=game,
+    return render_template('game/game.html', game=game,
                 player=player,
                 current_player=game.current_player.username,
                 other_players=other_players,
