@@ -4,6 +4,7 @@
     <div class="media-body">
         <h2 class="account-heading">{{ current_user.username }}</h2>
         <p class="text-secondary">{{ current_user.email }}</p>
+        <a href="{{ url_for('users.reset_request') }}">Change password</a>
     </div>
 </div>
 <form method="POST" action="" enctype="multipart/form-data">
@@ -41,4 +42,5 @@
         {{ form.submit(class="btn btn-outline-info") }}
     </div>
 </form>
+
 {% endblock content %}
