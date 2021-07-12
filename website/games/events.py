@@ -1,5 +1,5 @@
-from flask import session, request, abort
-from flask_socketio import send, emit, join_room, leave_room
+from flask import session, request
+from flask_socketio import emit, join_room, leave_room
 from website import socketio, gameManager
 from website.durak_game.card import Card
 
@@ -36,11 +36,21 @@ def leave(data):
 @socketio.on("startgame")
 def start_game(data):
     game, _ = get_game_and_player()
-    if (game.get_lobby_count() + game.get_player_count() > 1 
-        and not game.is_in_progress):
-        game.start_game()
-        event = {"event": "startgame"}
+    if game.is_in_progress:
+        event = {"event": "message",
+                 "body": "Game is already in progress",
+                 "type": "danger"}
         emit('status', event, room=game.id)
+        return
+    if (game.get_lobby_count() + game.get_player_count()) <= 1:
+        event = {"event": "message",
+                 "body": "Not enough players to start the game",
+                 "type": "danger"}
+        emit('status', event, room=game.id) 
+        return
+    game.start_game()
+    event = {"event": "startgame"}
+    emit('status', event, room=game.id)
 
 # Event when a user throws cards
 @socketio.on("throwcards")

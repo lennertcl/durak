@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'startgame':
                 on_startgame(data);
             break;
+            case 'message':
+                on_message(data)
         }
     });
     
@@ -53,5 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // When the game starts
     function on_startgame(data){
         window.location.href = game_url;
+    }
+
+    // Server sends a message to the lobby
+    function on_message(data){
+        messages = document.getElementById("flashed-messages");
+        const message = document.createElement("div");
+        message.className = "alert alert-" + data.type;
+        message.innerText = data.body;
+        messages.append(message);
     }
 }) 
