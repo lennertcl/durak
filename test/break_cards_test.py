@@ -56,8 +56,8 @@ def test_legal_break_card_illegal_player(game):
 # PERFORMING BREAK
 
 
-def test_break_legal(game):
-    """ Legal breaking of a card """
+def test_break_card(game):
+    """ Regular breaking of a card """
     game.start_game()
 
     p1 = game.prev_player(game.current_player)
@@ -74,6 +74,7 @@ def test_break_legal(game):
 
     assert game.table_cards[bottom_card] == top_card
     assert p2.get_card_count() == 6
+    assert top_card not in p2.cards
 
 
 # BREAKING CARDS
@@ -162,7 +163,32 @@ def test_legal_break_cards_illegal_lower_trump(game):
 
 
 # PERFORMING BREAK CARDS
-# TODO 
+
+
+def test_break_cards(game):
+    """ Regular breaking of cards 
+
+    We only test whether the round has been finished correctly by checking that
+    the current player has been set to the next player. Full functionality of
+    finishing a round is not tested here. 
+    """
+    game.start_game()
+    p1 = game.current_player
+    p2 = game.next_player(p1)
+    p3 = game.prev_player(p1)
+
+    p2.add_cards([Card(Card.HEARTS, Card.SEVEN)])
+    p1.add_cards([Card(Card.HEARTS, Card.EIGHT)])
+
+    game.throw_cards(p2, [Card(Card.HEARTS, Card.SEVEN)])
+    game.break_card(p1, Card(Card.HEARTS, Card.SEVEN), Card(Card.HEARTS, Card.EIGHT))
+
+    game.allow_break_cards(p2)
+    game.allow_break_cards(p3)
+
+    is_broken = game.break_cards(p1)
+    assert is_broken
+    assert game.current_player == p2
 
 
 # ALLOWING BREAK CARDS
