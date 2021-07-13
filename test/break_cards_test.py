@@ -240,7 +240,7 @@ def test_possible_move_top_card_possible(game):
     game.start_game()
     p = game.current_player
     game.table_cards = {
-        Card(Card.CLUBS, Card.SEVEN): Card(Card.HEARTS, Card.NINE),
+        Card(Card.HEARTS, Card.SEVEN): Card(Card.HEARTS, Card.NINE),
         Card(Card.HEARTS, Card.EIGHT): None
     }
 
@@ -302,4 +302,20 @@ def test_possible_move_top_card_impossible_already_on_top(game):
 
 
 # PERFORMING MOVE TOP CARD
-# TODO
+
+
+def test_move_top_card(game):
+    """ Regular moving of top card """
+    game.start_game()
+    p = game.current_player
+    game.table_cards = {
+        Card(Card.HEARTS, Card.SEVEN): Card(Card.HEARTS, Card.NINE),
+        Card(Card.HEARTS, Card.EIGHT): None
+    }
+
+    is_moved = game.move_top_card(p, Card(Card.HEARTS, Card.NINE),
+                                     Card(Card.HEARTS, Card.EIGHT))
+
+    assert is_moved
+    assert game.table_cards[Card(Card.HEARTS, Card.SEVEN)] is None
+    assert game.table_cards[Card(Card.HEARTS, Card.EIGHT)] == Card(Card.HEARTS, Card.NINE)
