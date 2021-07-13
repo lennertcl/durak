@@ -49,4 +49,4 @@ EMAIL_PASS=<app gmail password>
 python run.py
 ```
 
-Visit the application at 127.0.0.1:5000 in your browser.
+Visit the application at 0.0.0.0:5000 in your browser.
