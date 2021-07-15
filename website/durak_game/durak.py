@@ -204,18 +204,18 @@ class DurakGame:
         """
         self.table_cards.clear()
 
+        if not self.deck.is_empty():
+            self.distribute_new_cards()
+        # No else: need to check again because the deck might have become empty
+        if self.deck.is_empty():
+            self.transfer_finished_players()
+
         if has_broken:
             self.current_player = self.next_player(
                 self.current_player)
         else:
             self.current_player = self.next_player(
                 self.next_player(self.current_player))
-
-        if not self.deck.is_empty():
-            self.distribute_new_cards()
-        # No else: need to check again because the deck might have become empty
-        if self.deck.is_empty():
-            self.transfer_finished_players()
 
         if self.is_finished():
             self.is_in_progress = False
