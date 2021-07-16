@@ -66,14 +66,14 @@ def test_break_card(game):
     bottom_card = Card(Card.HEARTS, Card.SEVEN)
     top_card = Card(Card.HEARTS, Card.SEVEN)
     # Make sure the player can break the card
-    p1.add_cards([bottom_card])
-    p2.add_cards([top_card])
+    p1.cards = [bottom_card]
+    p2.cards = [top_card]
 
     game.throw_cards(p1, [bottom_card])
     game.break_card(p2, bottom_card, top_card)
 
     assert game.table_cards[bottom_card] == top_card
-    assert p2.get_card_count() == 6
+    assert p2.get_card_count() == 0
     assert top_card not in p2.cards
 
 
