@@ -98,13 +98,117 @@ def test_finish_round_has_taken(game):
     # TODO this might need a fix when cheats happened right at the end of a round
     assert not game.cheating
 
-def test_finish_round_deck_empty(game):
-    """Test finishing a round where the deck has become empty"""
-    pass
+def test_finish_round_deck_empty_has_broken(game):
+    """Test finishing a round where the deck has become empty
+    
+    The player has broken the cards
+    """
+    game.start_game()
+    p1 = game.current_player
+    p2 = game.prev_player(p1)
+    p3 = game.next_player(p1)
 
-def test_finish_round_game_finished(game):
-    """Test finishing a round where the game has finished"""
-    pass
+    game.deck.cards = [Card(Card.HEARTS, Card.SEVEN)]
+
+    p1.cards = [] # p1 will get last card in deck
+    p2.cards = [] # p2 is finished
+    p3.cards = [Card(Card.HEARTS, Card.EIGHT)] # p3 will remain the same
+
+    game.finish_round(has_broken=True)
+
+    assert Card(Card.HEARTS, Card.SEVEN) in p1.cards
+    assert Card(Card.HEARTS, Card.EIGHT) in p3.cards
+
+    assert p1.get_card_count() == 1
+    assert p2.get_card_count() == 0
+    assert p3.get_card_count() == 1
+
+    assert p1 in game.players
+    assert p2 in game.lobby
+    assert p3 in game.players
+
+def test_finish_round_deck_empty_has_taken(game):
+    """Test finishing a round where the deck has become empty
+    
+    The player has taken the cards
+    """
+    game.start_game()
+    p1 = game.current_player
+    p2 = game.prev_player(p1)
+    p3 = game.next_player(p1)
+
+    game.deck.cards = [Card(Card.HEARTS, Card.SEVEN)]
+
+    p1.cards = [] # p1 will get last card in deck
+    p2.cards = [] # p2 is finished
+    p3.cards = [Card(Card.HEARTS, Card.EIGHT)] # p3 will remain the same
+
+    game.finish_round(has_broken=False)
+
+    assert Card(Card.HEARTS, Card.SEVEN) in p1.cards
+    assert Card(Card.HEARTS, Card.EIGHT) in p3.cards
+
+    assert p1.get_card_count() == 1
+    assert p2.get_card_count() == 0
+    assert p3.get_card_count() == 1
+
+    assert p1 in game.players
+    assert p2 in game.lobby
+    assert p3 in game.players
+
+def test_finish_round_game_finished_has_broken(game):
+    """Test finishing a round where the game has finished
+    
+    The player has broken the cards
+    """
+    game.start_game()
+    p1 = game.current_player
+    p2 = game.prev_player(p1)
+    p3 = game.next_player(p1)
+    p4 = game.next_player(p3)
+
+    game.deck.cards = []
+
+    p1.cards = [] # p1 is finished
+    p2.cards = [] # p2 is finished
+    p3.cards = [] # p3 is finished
+    p4.cards = [Card(Card.HEARTS, Card.SEVEN)] # p4 loses the game
+
+    game.finish_round(has_broken=True)
+
+    assert not game.is_in_progress
+
+    for player in (p1, p2, p3, p4):
+        assert player.get_card_count() == 0
+        assert player in game.lobby
+        assert player not in game.players
+
+def test_finish_round_game_finished_has_taken(game):
+    """Test finishing a round where the game has finished
+    
+    The player has taken the cards
+    """
+    game.start_game()
+    p1 = game.current_player
+    p2 = game.prev_player(p1)
+    p3 = game.next_player(p1)
+    p4 = game.next_player(p3)
+
+    game.deck.cards = []
+
+    p1.cards = [] # p1 is finished
+    p2.cards = [] # p2 is finished
+    p3.cards = [] # p3 is finished
+    p4.cards = [Card(Card.HEARTS, Card.SEVEN)] # p4 loses the game
+
+    game.finish_round(has_broken=False)
+
+    assert not game.is_in_progress
+
+    for player in (p1, p2, p3, p4):
+        assert player.get_card_count() == 0
+        assert player in game.lobby
+        assert player not in game.players
 
 # REMOVE PLAYERS
 # TODO
