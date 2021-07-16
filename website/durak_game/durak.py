@@ -186,13 +186,14 @@ class DurakGame:
         """Finishes a round of the game
 
         All cards are removed from the table.
-        The current player is updated: if the current player has broken,
-        he is allowed to throw cards, otherwise he is not.
         If the deck is not empty, new cards are distributed.
         If the deck is empty / has become empty, players that are finished are 
         transfered to the lobby.
-        If the game is finished, the in progress indicator is set to False and
-        the cards of all remaining players are removed.
+        If the game is finished, the in progress indicator is set to False,
+        the cards of all remaining players are removed, and every player is
+        removed from the players and added to the lobby.
+        Otherwise, the current player is updated: if the current player has 
+        broken, he is allowed to throw cards, otherwise he is not.
         Allow break and throwing started indicators are reset to False.
         All cheats are reset.
 
@@ -210,17 +211,19 @@ class DurakGame:
         if self.deck.is_empty():
             self.transfer_finished_players()
 
-        if has_broken:
-            self.current_player = self.next_player(
-                self.current_player)
-        else:
-            self.current_player = self.next_player(
-                self.next_player(self.current_player))
-
         if self.is_finished():
             self.is_in_progress = False
+
             for player in self.players:
                 player.cards = []
+                self.lobby.append(player)
+
+            self.players = []
+        else:
+            if has_broken:
+                self.current_player = self.next_player(self.current_player)
+            else:
+                self.current_player = self.next_player(self.next_player(self.current_player))
 
         self.throwing_started = False
         self.next_allows_break = False
