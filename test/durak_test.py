@@ -210,5 +210,54 @@ def test_finish_round_game_finished_has_taken(game):
         assert player in game.lobby
         assert player not in game.players
 
+
 # REMOVE PLAYERS
-# TODO
+
+
+def test_remove_player_from_lobby(game):
+    """ Remove a player who was in the lobby """
+    initial_lobby_count = len(game.lobby)
+    p = game.lobby[0]
+
+    is_next_round = game.remove_player(p)
+
+    assert not is_next_round
+
+    assert len(game.lobby) == initial_lobby_count - 1
+
+    assert p not in game.lobby
+
+def test_remove_player_from_game(game):
+    """ Remove a player who was playing in the game but not the current player """
+    game.start_game()
+    initial_players_count = len(game.players)
+    p1 = game.current_player
+    p2 = game.next_player(p1)
+    p3 = game.next_player(p2)
+
+    is_next_round = game.remove_player(p2)
+
+    assert not is_next_round
+
+    assert len(game.players) == initial_players_count - 1
+
+    assert p2 not in game.players
+
+def test_remove_player_from_game_current_player(game):
+    """ Remove a player who was playing in the game as the current player """
+    game.start_game()
+    initial_players_count = len(game.players)
+    p1 = game.current_player
+    p2 = game.next_player(p1)
+    p3 = game.next_player(p2)
+
+    is_next_round = game.remove_player(p1)
+
+    assert is_next_round
+
+    assert len(game.players) == initial_players_count - 1
+
+    assert p1 not in game.players
+
+    # If p1 is removed, p2 can throw cards to p3
+    assert game.current_player == p3
