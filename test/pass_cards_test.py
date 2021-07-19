@@ -133,4 +133,63 @@ def test_legal_pass_on_illegal_different_symbol_given(game):
     assert not game.is_legal_pass_on(cards)
 
 
+# LEGAL USING TRUMP
+
+
+def test_legal_pass_on_using_trump_legal(game):
+    """ Passing on the cards is legal """
+    game.start_game()
+    p = game.current_player
+
+    game.trump = Card.DIAMONDS
+
+    p.add_cards([Card(Card.DIAMONDS, Card.SEVEN)])
+
+    game.table_cards = {Card(Card.HEARTS, Card.SEVEN): None,
+                        Card(Card.CLUBS, Card.SEVEN): None}
+
+    assert game.is_legal_pass_on_using_trump()
+
+def test_legal_pass_on_using_trump_illegal_empty_table(game):
+    """ There are no cards on the table """
+    game.start_game()
+    p = game.current_player
+
+    game.trump = Card.DIAMONDS
+
+    p.add_cards([Card(Card.DIAMONDS, Card.SEVEN)])
+
+    game.table_cards = dict()
+
+    assert not game.is_legal_pass_on_using_trump()
+
+def test_legal_pass_on_using_trump_illegal_different_symbol_table(game):
+    """ Not all cards on the table have the same symbol """
+    game.start_game()
+    p = game.current_player
+
+    game.trump = Card.DIAMONDS
+
+    p.add_cards([Card(Card.DIAMONDS, Card.SEVEN)])
+
+    game.table_cards = {Card(Card.HEARTS, Card.SEVEN): None,
+                        Card(Card.CLUBS, Card.EIGHT): None}
+
+    assert not game.is_legal_pass_on_using_trump()
+
+def test_legal_pass_on_illegal_no_trump(game):
+    """ The current player does not have the trump card of the symbol on the table"""
+    game.start_game()
+    p = game.current_player
+
+    game.trump = Card.DIAMONDS
+
+    p.cards = [Card(Card.DIAMONDS, Card.EIGHT), Card(Card.SPADES, Card.SEVEN)]
+
+    game.table_cards = {Card(Card.HEARTS, Card.SEVEN): None,
+                        Card(Card.CLUBS, Card.SEVEN): None}
+
+    assert not game.is_legal_pass_on_using_trump()
+
+
 # PERFORMING PASSING ON
