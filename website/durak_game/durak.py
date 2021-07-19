@@ -683,6 +683,7 @@ class DurakGame:
     def is_legal_pass_on(self, cards: List[Card]) -> bool:
         """Test whether passing on is legal
 
+        False if no cards are given
         False if there are no cards on the table.
         False if not all cards on the table have the same symbol.
         False if not all given cards have the same symbol as cards on the table.
@@ -695,10 +696,12 @@ class DurakGame:
         """
         if not cards:
             return False
+        if not self.table_cards:
+            return False
         symbol = next(iter(self.table_cards)).symbol
         return (all(card.symbol == symbol for card in cards)
             and all(bottom_card.symbol == symbol
-                for bottom_card, top_card in self.table_cards.items()))
+                for bottom_card, _ in self.table_cards.items()))
 
     def is_legal_pass_on_using_trump(self) -> bool:
         """Test whether passing on using trump is legal
