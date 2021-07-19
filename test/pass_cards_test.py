@@ -78,4 +78,59 @@ def test_possible_pass_on_already_broken(game):
 # LEGAL
 
 
+def test_legal_pass_on_legal(game):
+    """ Passing on the cards is legal """
+    game.start_game()
+
+    game.table_cards = {Card(Card.HEARTS, Card.SEVEN): None,
+                        Card(Card.CLUBS, Card.SEVEN): None}
+
+    cards = [Card(Card.SPADES, Card.SEVEN)]
+
+    assert game.is_legal_pass_on(cards)
+
+def test_legal_pass_on_illegal_no_cards(game):
+    """ There are no cards given to pass on with """
+    game.start_game()
+
+    game.table_cards = {Card(Card.HEARTS, Card.SEVEN): None,
+                        Card(Card.CLUBS, Card.SEVEN): None}
+
+    cards = []
+
+    assert not game.is_legal_pass_on(cards)
+
+def test_legal_pass_on_illegal_empty_table(game):
+    """ There are no cards on the table """
+    game.start_game()
+
+    game.table_cards = dict()
+
+    cards = [Card(Card.SPADES, Card.SEVEN)]
+
+    assert not game.is_legal_pass_on(cards)
+
+def test_legal_pass_on_illegal_different_symbol_table(game):
+    """ Not all cards on the table have the same symbol """
+    game.start_game()
+
+    game.table_cards = {Card(Card.HEARTS, Card.SEVEN): None,
+                        Card(Card.CLUBS, Card.EIGHT): None}
+
+    cards = [Card(Card.SPADES, Card.SEVEN)]
+
+    assert not game.is_legal_pass_on(cards)
+
+def test_legal_pass_on_illegal_different_symbol_given(game):
+    """ Not all given cards have the same symbol as the cards on the table"""
+    game.start_game()
+
+    game.table_cards = {Card(Card.HEARTS, Card.SEVEN): None,
+                        Card(Card.CLUBS, Card.SEVEN): None}
+
+    cards = [Card(Card.SPADES, Card.SEVEN), Card(Card.DIAMONDS, Card.EIGHT)]
+
+    assert not game.is_legal_pass_on(cards)
+
+
 # PERFORMING PASSING ON
