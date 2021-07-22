@@ -193,3 +193,39 @@ def test_legal_pass_on_illegal_no_trump(game):
 
 
 # PERFORMING PASSING ON
+
+
+def test_pass_on(game):
+    """ Passing on the cards """
+    game.start_game()
+    p = game.current_player
+
+    game.table_cards = {Card(Card.HEARTS, Card.SEVEN): None,
+                        Card(Card.CLUBS, Card.SEVEN): None}
+
+    card = Card(Card.SPADES, Card.SEVEN)
+    p.cards = [card]
+
+    is_passed_on = game.pass_on(p, [card])
+
+    assert is_passed_on
+    assert card in game.table_cards
+    assert card not in p.cards
+    assert game.current_player == game.next_player(p)
+
+def test_pass_on_using_trump(game):
+    """ Passing on the cards using trump """
+    game.start_game()
+    p = game.current_player
+
+    game.trump = Card.DIAMONDS
+
+    p.add_cards([Card(Card.DIAMONDS, Card.SEVEN)])
+
+    game.table_cards = {Card(Card.HEARTS, Card.SEVEN): None,
+                        Card(Card.CLUBS, Card.SEVEN): None}
+
+    is_passed_on = game.pass_on_using_trump(p)
+    
+    assert is_passed_on
+    assert game.current_player == game.next_player(p)
