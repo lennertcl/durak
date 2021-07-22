@@ -634,7 +634,7 @@ class DurakGame:
         self.current_player = self.next_player(self.current_player)
         return True
 
-    def pass_on_using_trump(self, player):
+    def pass_on_using_trump(self, player) -> bool:
         """Pass on the cards to the next player using trump card
 
         If passing on is not possible, nothing happens and False is returned.
