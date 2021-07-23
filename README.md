@@ -38,6 +38,7 @@ Enter the correct information for your system:
 
 ```
 SECRET_KEY=<your secret key>
+SECURITY_PASSWORD_SALT=<your password salt>
 SQLALCHEMY_DATABASE_URI=<location of the database>
 EMAIL_USER=<app gmail account>
 EMAIL_PASS=<app gmail password>
@@ -49,4 +50,4 @@ EMAIL_PASS=<app gmail password>
 python run.py
 ```
 
-Visit the application at 0.0.0.0:5000 in your browser.
+Visit the application at localhost:5000 in your browser.
