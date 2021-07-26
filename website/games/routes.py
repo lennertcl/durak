@@ -57,10 +57,16 @@ def game(game_id):
         player = game.get_player(current_user.username)
         spectating = player not in game.players
         other_players = player.get_players_in_position(game, spectating=spectating)
-    except KeyError as e:
+        allowed_break_players = []
+        if game.next_allows_break:
+            allowed_break_players.append(game.next_player(game.current_player))
+        if game.prev_allows_break:
+            allowed_break_players.append(game.prev_player(game.current_player))
+    except KeyError:
         abort(404)
     return render_template('game/game.html', game=game,
                 player=player,
                 current_player=game.current_player.username,
                 other_players=other_players,
-                spectating=spectating)
+                spectating=spectating,
+                allowed_break_players=allowed_break_players)

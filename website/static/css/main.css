@@ -67,6 +67,10 @@
     color:blue;
 }
 
+.allowed-break-player{
+    color:gold;
+}
+
 .current-player-buttons{
     position:absolute;
     bottom:150px;

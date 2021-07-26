@@ -16,7 +16,7 @@
             <!-- All players in the game -->
             <div id="otherplayers">
                 {% for other_player, pos in other_players %}
-                    <div class="other-player player{{ pos }}" id="player{{ other_player.username }}">
+                    <div class="other-player player{{ pos }} {{ 'allowed-break-player' if other_player in allowed_break_players }}" id="player{{ other_player.username }}">
                         <p>{{ other_player.username }}</p>
                         <p id="cardcount{{ other_player.username }}">{{ other_player.get_card_count() }}</p>
                     </div>

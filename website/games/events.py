@@ -144,7 +144,11 @@ def pass_trump(data):
 @socketio.on("allowbreak")
 def allow_break(data):
     game, player = get_game_and_player()
-    game.allow_break_cards(player)
+    allowed_break = game.allow_break_cards(player)
+    if allowed_break:
+        event = {"event": "allowbreak",
+                 "player": player.username}
+        emit('move', event, room=game.id)
 
 # Give every player the necessary information
 # after a round is finished

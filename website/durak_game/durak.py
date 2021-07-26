@@ -486,7 +486,7 @@ class DurakGame:
                     return False
         return True
 
-    def allow_break_cards(self, player: Player):
+    def allow_break_cards(self, player: Player) -> bool:
         """ Indicate an allow break by a player
 
         The flag is set based on whether the player is the previous / next
@@ -495,12 +495,19 @@ class DurakGame:
         Args:
             player: Player
                 The player allowing breaking of cards
+
+        Returns: bool
+            True if the player has succesfully allowed breaking cards
         """
+        allowed_break = False
         if player == self.next_player(self.current_player):
             self.next_allows_break = True
+            allowed_break = True
         # No elif: if 2 players then next == prev
         if player == self.prev_player(self.current_player):
             self.prev_allows_break = True
+            allowed_break = True
+        return allowed_break
 
     def move_top_card(self, player: Player, top_card: Card,
                       new_bottom_card: Card) -> bool:

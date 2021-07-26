@@ -53,8 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
             break;
             case 'passtrump':
                 on_passtrump(data);
+            break;
             case 'movetopcard':
                 on_move_top_card(data);
+            break;
+            case 'allowbreak':
+                on_allow_break(data);
+            break;
         }
     });
     
@@ -329,6 +334,14 @@ document.addEventListener('DOMContentLoaded', () => {
              'topcard': selected_cards[0]});
     }
 
+    // When a user allows break cards
+    function on_allow_break(data){
+        if(data.player != username){
+            const player = document.getElementById('player' + data.player);
+            player.classList.add('allowed-break-player');
+        }
+    }
+
     // When a user clicks the allow break cards button
     function allow_breakcards(){
         socket.emit('allowbreak', {});
@@ -440,11 +453,18 @@ document.addEventListener('DOMContentLoaded', () => {
             getElementsByTagName('div');
         for(var i = 0; i < other_players.length; i++){
             var name = other_players[i].id.replace('player', '');
+
             if(data.cardcounts[name]){
                 // The player is still in the game
                 // Update the card count
                 var count = document.getElementById('cardcount' + name);
                 count.innerHTML = data.cardcounts[name];
+
+                // Nobody has allowed breaking at the beginning of a round
+                if(other_players[i].classList.contains('allowed-break-player'))
+                {
+                    other_players[i].classList.remove('allowed-break-player');
+                }
             }else{
                 // The player has finished playing
                 var player = document.getElementById('player' + name);
@@ -465,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 only_players.remove();
             }
         }
-    }
+   }
 
     function update_current_player(new_player){
         // If you were the current player
