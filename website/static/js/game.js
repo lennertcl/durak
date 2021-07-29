@@ -97,68 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('startgame', {})
     }
 
-    // TODO refactor own_cards.onclick and table_cards.onclick
-    // into functions
-
     // When user clicks one of their own cards
-    own_cards.onclick = (event) => {
-        let target = event.target;
-        if (!target.id.includes('card')){
-            // Don't select the div
-            return;
-        }
-        if (selected_cards.includes(target.id)){
-            // Unselect card if already selected
-            selected_cards = selected_cards.filter((value, index, arr) => value != target.id);
-            target.classList.remove('selected-card');
-        }else{
-            selected_cards.push(target.id);
-            target.classList.add('selected-card');
-        }
-    }
+    own_cards.addEventListener('click', on_own_cards_click);
 
     // When user clicks the cards on the table
-    table_cards.onclick = (event) => {
-        // Prevent reloading
-        event.preventDefault();
-        let target = event.target;
-        if(target.id == table_cards.id){
-            // User throws new cards onto table
-            if(current_player != username){
-                // Only other players can throw cards
-                try_throwcards();
-            }
-        }
-        else{
-            if (selected_cards.length == 1){
-                // You can only throw 1 card on top of other card
-                breakcard(target.id);
-            }else if (current_player == username){
-                // Current player can move top cards
-                if (target.className.includes('bottom-card')){
-                    if(selected_top_card){
-                        // Move a top card
-                        move_top_card(target.id);
-                        // Unselect the card (even if not legal)
-                        document.getElementById(selected_top_card).classList.remove('selected-card');
-                        selected_top_card = null;
-                    }
-                }else{
-                    if(selected_top_card == target.id){
-                        // Unselecting the top card
-                        selected_top_card = null;
-                        // Unstyle the card
-                        target.classList.remove('selected-card');
-                    }else if(!selected_top_card){
-                        // Select a top card
-                        selected_top_card = target.id;
-                        // Style the card
-                        target.classList.add('selected-card');
-                    }
-                }
-            }
-        }
-    }
+    table_cards.addEventListener('click', on_table_cards_click);
 
 
     // GAME STATUS
@@ -191,6 +134,134 @@ document.addEventListener('DOMContentLoaded', () => {
         if (p){
             p.remove();
         }
+    }
+
+
+    // ONCLICK EVENTS
+
+
+    function on_own_cards_click(event){
+        let target = event.target;
+        if (!target.id.includes('card')){
+            // Don't select the div
+            return;
+        }
+        if (selected_cards.includes(target.id)){
+            // Unselect card if already selected
+            selected_cards = selected_cards.filter((value, index, arr) => value != target.id);
+            target.classList.remove('selected-card');
+        }else{
+            selected_cards.push(target.id);
+            target.classList.add('selected-card');
+        }
+    }
+
+    /**
+     * When a user clicks on the table cards
+     * 
+     * @param {*} event 
+     *      The onclick event
+     * 
+     * If the user clicks on the table itself (not on the cards), then cards
+     * are thrown on the table if the user is not the current player.
+     * Otherwise the player clicked a card on the table.
+     */
+    function on_table_cards_click(event){
+        // Prevent reloading
+        event.preventDefault();
+
+        let target_id = event.target.id;
+
+        // User throws new cards onto table
+        if(target_id == table_cards.id)
+        {
+            // Only other players can throw cards
+            if(current_player != username)
+            {
+                try_throwcards();
+            }
+        }
+        else
+        {
+            on_table_card_click(target_id);
+        }
+    }
+
+    /**
+     * When a user clicks on a card on the table 
+     * 
+     * @param {string} clicked_card 
+     *      ID of the card the player clicked on
+     * 
+     * If the player has exactly one card selected, the clicked card is broken.
+     * Otherwise, if the user is the current player and he clicks a bottom card
+     * while having a top card selected, the selected top card is moved to the
+     * new bottom card.
+     * Otherwise, if the user is the current player and he clicks a top card,
+     * the top card is selected or unselected.
+     */
+    function on_table_card_click(clicked_card)
+    {
+        // You can only throw 1 card on top of other card
+        if (selected_cards.length == 1)
+        {
+            breakcard(target_id);
+        }
+        // Current player can move top cards
+        else if (current_player == username)
+        {
+            if (target.className.includes('bottom-card') && selected_top_card)
+            {
+                move_top_card(target_id);
+            }
+            else if (target.className.includes('top-card'))
+            {
+                select_or_unselect_top_card(target_id);
+            }
+        }
+    }
+
+    /**
+     * If the card was currently the top card, unselect it
+     * Otherwise, make the clicked card the top card
+     * 
+     * @param {string} clicked_card 
+     *      ID of the card
+     */
+    function select_or_unselect_top_card(clicked_card)
+    {
+        // Unselecting the top card
+        if(selected_top_card == clicked_card)
+        {
+            unselect_top_card();
+        }
+        // Selecting a top card
+        else if(!selected_top_card)
+        {
+            select_top_card(clicked_card);
+        }
+    }
+    
+    
+    /**
+     * @param {string} card_to_select
+     *      ID of the card to select
+     */
+    function select_top_card(card_to_select)
+    {
+        selected_top_card = card_to_select;
+
+        const card = document.getElementById(selected_top_card);
+        target.classList.add('selected-card');
+    }
+
+
+    function unselect_top_card()
+    {
+        const card = document.getElementById(selected_top_card);
+        card.classList.remove('selected-card');
+
+        selected_top_card = null;
     }
 
 
@@ -366,6 +437,8 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('movetopcard',
             {'new_bottomcard': new_bottom_card,
              'topcard': selected_top_card});
+
+        unselect_top_card();
     }
 
 
