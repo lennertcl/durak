@@ -97,11 +97,25 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('startgame', {})
     }
 
+    // Allow drop events
+    document.addEventListener("dragover", event => {
+        event.preventDefault();
+    });
+
     // When user clicks one of their own cards
     own_cards.addEventListener('click', on_own_cards_click);
 
+    // When user starts dragging one of their own cards
+    own_cards.addEventListener('dragstart', on_own_cards_drag);
+
     // When user clicks the cards on the table
     table_cards.addEventListener('click', on_table_cards_click);
+
+    // When user drags the cards on the table
+    table_cards.addEventListener('dragstart', on_table_cards_drag);
+
+    // When user drops on table
+    table_cards.addEventListener('drop', on_table_cards_click);
 
 
     // GAME STATUS
@@ -148,11 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (selected_cards.includes(target.id)){
             // Unselect card if already selected
-            selected_cards = selected_cards.filter((value, index, arr) => value != target.id);
+            selected_cards = selected_cards.filter((value) => value != target.id);
             target.classList.remove('selected-card');
-        }else{
-            selected_cards.push(target.id);
-            target.classList.add('selected-card');
+        }else
+        {
+            select_card(target.id);
         }
     }
 
@@ -166,14 +180,15 @@ document.addEventListener('DOMContentLoaded', () => {
      * are thrown on the table if the user is not the current player.
      * Otherwise the player clicked a card on the table.
      */
-    function on_table_cards_click(event){
+    function on_table_cards_click(event)
+    {
         // Prevent reloading
         event.preventDefault();
 
-        let target_id = event.target.id;
+        let target = event.target;
 
         // User throws new cards onto table
-        if(target_id == table_cards.id)
+        if(target.id == table_cards.id)
         {
             // Only other players can throw cards
             if(current_player != username)
@@ -183,15 +198,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         else
         {
-            on_table_card_click(target_id);
+            on_table_card_click(target);
         }
     }
 
     /**
      * When a user clicks on a card on the table 
      * 
-     * @param {string} clicked_card 
-     *      ID of the card the player clicked on
+     * @param {*} target
+     *      The clicked target on the table
      * 
      * If the player has exactly one card selected, the clicked card is broken.
      * Otherwise, if the user is the current player and he clicks a bottom card
@@ -200,25 +215,83 @@ document.addEventListener('DOMContentLoaded', () => {
      * Otherwise, if the user is the current player and he clicks a top card,
      * the top card is selected or unselected.
      */
-    function on_table_card_click(clicked_card)
+    function on_table_card_click(target)
     {
         // You can only throw 1 card on top of other card
         if (selected_cards.length == 1)
         {
-            breakcard(target_id);
+            breakcard(target.id);
         }
         // Current player can move top cards
         else if (current_player == username)
         {
             if (target.className.includes('bottom-card') && selected_top_card)
             {
-                move_top_card(target_id);
+                move_top_card(target.id);
             }
             else if (target.className.includes('top-card'))
             {
-                select_or_unselect_top_card(target_id);
+                select_or_unselect_top_card(target.id);
             }
         }
+    }
+
+
+    // ON DRAG EVENTS
+
+
+    /**
+     * Event when a user drags starting from his own cards 
+     * 
+     * @param {*} event 
+     *      The ondrag event
+     * 
+     * If no cards were selected and the user starts dragging from a card,
+     * this card is added to the selected cards
+     */
+    function on_own_cards_drag(event)
+    {
+        var card = event.target;
+        if (card.id.includes('card'))
+        {
+            select_card(card.id);
+        }
+    }
+
+    /**
+     * Event when a user drags starting from the table cards
+     * 
+     * @param {*} event 
+     *      The ondrag event 
+     */
+    function on_table_cards_drag(event)
+    {
+        target = event.target;
+        if (username == current_player && target.className.includes('top-card'))
+        {
+            unselect_top_card();
+            select_top_card(target.id);
+        }
+    }
+
+    /**
+     * Select a card from your own cards 
+     * 
+     * @param {string} card 
+     *      ID of the card to select
+     * 
+     * If the card is already selected, nothing happens
+     * Otherwise the card is added to the selected cards and styling is added
+     */
+    function select_card(card)
+    {
+        if (selected_cards.includes(card))
+        {
+            return;
+        }
+        const card_element = document.getElementById(card);
+        selected_cards.push(card);
+        card_element.classList.add('selected-card');
     }
 
     /**
@@ -252,15 +325,17 @@ document.addEventListener('DOMContentLoaded', () => {
         selected_top_card = card_to_select;
 
         const card = document.getElementById(selected_top_card);
-        target.classList.add('selected-card');
+        card.classList.add('selected-card');
     }
 
 
     function unselect_top_card()
     {
         const card = document.getElementById(selected_top_card);
-        card.classList.remove('selected-card');
-
+        if (card) 
+        {
+            card.classList.remove('selected-card');
+        }
         selected_top_card = null;
     }
 
