@@ -1,7 +1,9 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => 
+{
     var socket = io();
     var selected_cards = [];
     var selected_top_card = null;
+
     const own_cards = document.getElementById('owncards');
     const table_cards = document.getElementById('tablecards');
     const current_player_buttons = document.getElementById('currentplayerbuttons');
@@ -10,14 +12,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Execute once when loading the page
     on_startgame();
 
-    // When user connects to the game
-    socket.on('connect', () => {
+
+    // SOCKETIO EVENTS
+
+
+    socket.on('connect', () => 
+    {
         socket.emit('join', {'username': username});
     });
 
-    // Events when something changes to game status
-    socket.on('status', data => {
-        switch(data.event){
+    socket.on('status', data => 
+    {
+        switch(data.event)
+        {
             case 'joined':
                 on_join(data);
             break;
@@ -33,9 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Events when other players make a move
-    socket.on('move', data => {
-        switch(data.event){
+    socket.on('move', data => 
+    {
+        switch(data.event)
+        {
             case 'throwcards':
                 on_throwcards(data);
             break;
@@ -63,74 +71,92 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // When user clicks take cards button
-    document.querySelector('#takecards').onclick = () => {
+
+    // BUTTON EVENTS
+
+
+    document.querySelector('#takecards').onclick = () => 
+    {
         takecards();
     }
     
-    // When user clicks break cards button
-    document.querySelector('#breakcards').onclick = () => {
+    document.querySelector('#breakcards').onclick = () =>
+    {
         try_breakcards();
     }
 
-    // When user clicks pass using cards button
-    document.querySelector('#passcards').onclick = () => {
+    document.querySelector('#passcards').onclick = () => 
+    {
         try_passcards();
     }
 
-    // When user clicks pass using cards button
-    document.querySelector('#passtrump').onclick = () => {
+    document.querySelector('#passtrump').onclick = () => 
+    {
         try_passtrump();
     }
 
-    // When user clicks allow break cards button
-    document.querySelector('#allowbreakbutton').onclick = () => {
+    document.querySelector('#allowbreakbutton').onclick = () => 
+    {
         allow_breakcards();
     }
 
-    // When user clicks the leave button
-    document.querySelector('#leave_button').onclick = () => {
+    document.querySelector('#leave_button').onclick = () => 
+    {
         socket.emit('leave', {'username': username});
     };
 
-    document.querySelector('#start_button').onclick = () => {
+    document.querySelector('#start_button').onclick = () => 
+    {
         socket.emit('startgame', {})
     }
 
-    // Allow drop events
-    document.addEventListener("dragover", event => {
+
+    // CARD EVENTS
+
+
+    // Prevent default to make sure drop events work as expected
+    document.addEventListener("dragover", event => 
+    {
         event.preventDefault();
     });
 
-    // When user clicks one of their own cards
     own_cards.addEventListener('click', on_own_cards_click);
 
-    // When user starts dragging one of their own cards
     own_cards.addEventListener('dragstart', on_own_cards_drag);
 
-    // When user clicks the cards on the table
     table_cards.addEventListener('click', on_table_cards_click);
 
-    // When user drags the cards on the table
     table_cards.addEventListener('dragstart', on_table_cards_drag);
 
-    // When user drops on table
     table_cards.addEventListener('drop', on_table_cards_click);
 
 
     // GAME STATUS
 
 
-    // When the game starts
-    function on_startgame(){
+    function on_startgame()
+    {
         update_current_player(current_player);
     }
 
-    // Some player joins the game
-    function on_join(data){
-        // Add to the player list
+    /**
+     * Add a player to the game
+     *  
+     * @param {object} data 
+     *      Object containing data about player joining event
+     *      {
+     *          'event': 'joined',
+     *          'username': <username of the player joining>
+     *      }
+     * 
+     * If the player wasn't already in the list of players, the player is added
+     * to the list of players
+     */
+    function on_join(data)
+    {
         p = document.getElementById("sideplayer" + data.username);
-        if (!p){
+        if (!p)
+        {
             const p = document.createElement('p');
             p.innerHTML = data.username;
             p.id = "sideplayer" + data.username;
@@ -138,14 +164,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Some player leaves the game
-    function on_left(data){
-        // Remove from the player list
+    /**
+     * Remove a player from the game
+     * 
+     * @param {object} data 
+     *      Object containing data about player leaving event
+     *      {
+     *          'event': 'left',
+     *          'username': <username of the player leaving>
+     *      }
+     * 
+     * The player is removed from the player list
+     * If the player was still playing he is removed from the table
+     */
+    function on_left(data)
+    {
         var p = document.getElementById("sideplayer" + data.username);
         p.remove();
-        // Remove from the table
+
         p = document.getElementById("player" + data.username);
-        if (p){
+        if (p)
+        {
             p.remove();
         }
     }
@@ -154,19 +193,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // ONCLICK EVENTS
 
 
-    function on_own_cards_click(event){
-        let target = event.target;
-        if (!target.id.includes('card')){
-            // Don't select the div
+    /**
+     * When a user clicks on his own cards
+     * 
+     * @param {*} event 
+     *      The onclick event
+     * 
+     * If the clicked element is actually a card then the card is unselected
+     * if it was already selected and selected if it wasn't
+     */
+    function on_own_cards_click(event)
+    {
+        let card = event.target.id;
+
+        if (!card.includes('card'))
+        {
             return;
         }
-        if (selected_cards.includes(target.id)){
-            // Unselect card if already selected
-            selected_cards = selected_cards.filter((value) => value != target.id);
-            target.classList.remove('selected-card');
-        }else
+
+        if (selected_cards.includes(card))
         {
-            select_card(target.id);
+            unselect_card(card);
+        }
+        else
+        {
+            select_card(card);
         }
     }
 
@@ -289,9 +340,30 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             return;
         }
-        const card_element = document.getElementById(card);
+
         selected_cards.push(card);
-        card_element.classList.add('selected-card');
+        document.getElementById(card).classList.add('selected-card');
+    }
+
+    /**
+     * Unselect a card from your own cards 
+     * 
+     * @param {string} card 
+     *      ID of the card to unselect
+     * 
+     * If the card is not selected, nothing happens
+     * Otherwise the card is removed from the selected cards and styling
+     * is removed
+     */
+    function unselect_card(card)
+    {
+        if (!selected_cards.includes(card))
+        {
+            return;
+        }
+
+        selected_cards = selected_cards.filter((value) => value != card);
+        document.getElementById(card).classList.remove('selected-card');
     }
 
     /**
@@ -315,7 +387,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    
     /**
      * @param {string} card_to_select
      *      ID of the card to select
@@ -327,7 +398,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.getElementById(selected_top_card);
         card.classList.add('selected-card');
     }
-
 
     function unselect_top_card()
     {
@@ -343,29 +413,49 @@ document.addEventListener('DOMContentLoaded', () => {
     // THROWING CARDS
 
 
-    // Try throwing the cards
-    // If throwing the cards is possible,
-    // the server will emit the event to everyone
-    function try_throwcards(){
-        // Send throwcards to server
+    /**
+     * Try throwing the currently selected cards onto the table
+     * 
+     * A throwcards event is emitted to the backend
+     */
+    function try_throwcards()
+    {
         socket.emit('throwcards', 
             {'username': username,
              'cards': selected_cards});
     }
 
-    // Some player throws cards on the table
-    function on_throwcards(data){
-        if (username == data.player){
+    /**
+     * Event when a player throws some cards onto the table 
+     * 
+     * @param {object} data 
+     *      Object containing data about the throwcards event
+     *      {
+     *          'event': 'throwcards',
+     *          'player': <username of the player throwing the cards>,
+     *          'cards': <list of card ids of the thrown cards> 
+     *      }
+     * 
+     * If this player is the player throwing the cards, throw the cards
+     * Otherwise, edit the throwing player's card count 
+     * Show all thrown cards on the table
+     */
+    function on_throwcards(data)
+    {
+        if (username == data.player)
+        {
             do_throwcards();
-        }else{
-            // Edit the player's card count
+        }
+        else
+        {
             var player_count = document.
                 getElementById('cardcount' + data.player);
             player_count.innerHTML = parseInt(player_count.innerHTML)
                                         - data.cards.length;
         }
-        // Show the cards on the table
-        for(var i = 0; i < data.cards.length; i++){
+
+        for(var i = 0; i < data.cards.length; i++)
+        {
             // Create a new bottom-top card pair
             const pair = document.createElement('div');
             pair.className = "table-card-pair";
@@ -377,14 +467,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Throw cards into the game
-    function do_throwcards(){
-       // Remove the cards from your hand
-        for(var i = 0; i < selected_cards.length; i++){
+    /**
+     * Throw cards into the game
+     * 
+     * The cards are removed from your hand
+     * Your selected cards are cleared
+     */
+    function do_throwcards()
+    {
+        for(var i = 0; i < selected_cards.length; i++)
+        {
             var card = document.getElementById(selected_cards[i]);
             card.remove();
         }
-        // Clear the selected cards
+
         selected_cards = [];
     }
 
@@ -393,10 +489,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Some player takes cards into his hand
-    function on_takecards(){
+    function on_takecards()
+    {
         // Add the number of cards to the taking 
         // player's number of cards
-        if(current_player != username){
+        if(current_player != username)
+        {
             // Only if it's another player
             var player_count = document.
                 getElementById('cardcount' + current_player);
@@ -408,23 +506,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Take cards into hand
-    function takecards(){
+    function takecards()
+    {
         var pairs = table_cards.getElementsByClassName('table-card-pair');
         // Prevent the user from pressing take cards before
         // any cards where thrown
-        if(pairs.length == 0){
+        if(pairs.length == 0)
+        {
             return;
         }
         // Let the other players know
         socket.emit('takecards', {});
         // Add the cards to your hand
-        for(var i = 0; i < pairs.length; i++){
+        for(var i = 0; i < pairs.length; i++)
+        {
             // Take bottom and top cards of table
             // Add to your own cards
             var cards = pairs[i].getElementsByTagName('img');
             const bottom_card = make_card(cards[0].id);
             own_cards.append(bottom_card);
-            if (cards.length == 2){
+            if (cards.length == 2)
+            {
                 // If there is a top card
                 const top_card = make_card(cards[1].id);
                 own_cards.append(top_card);
@@ -437,26 +539,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Some player breaks the cards
-    function on_breakcards(data){
+    function on_breakcards(data)
+    {
         // on_finish_round handles everything
         // except cheating?
     }
 
     // Take cards into hand
-    function try_breakcards(){
+    function try_breakcards()
+    {
         socket.emit('breakcards', 
             {'username': username});
     }
 
     // Some player breaks a card
-    function on_breakcard(data){
-        if(data.player == username){
+    function on_breakcard(data)
+    {
+        if(data.player == username)
+        {
             // Remove the cards from your hand if you
             // threw them
             document.getElementById(selected_cards[0]).remove();
             // Clear the selected cards
             selected_cards = [];
-        }else{
+        }
+        else
+        {
             // Edit the amount of cards of the player breaking
             var player_count = document.
                 getElementById('cardcount' + current_player);
@@ -473,7 +581,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Break a card: put another card on top of it
     // This can only be called when you only have
     // one selected card
-    function breakcard(bottom_card){
+    function breakcard(bottom_card)
+    {
         socket.emit('breakcard',
             {'username': username,
              'bottomcard': bottom_card,
@@ -481,21 +590,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // When a user allows break cards
-    function on_allow_break(data){
-        if(data.player != username){
+    function on_allow_break(data)
+    {
+        if(data.player != username)
+        {
             const player = document.getElementById('player' + data.player);
             player.classList.add('allowed-break-player');
         }
     }
 
     // When a user clicks the allow break cards button
-    function allow_breakcards(){
+    function allow_breakcards()
+    {
         socket.emit('allowbreak', {});
         allow_break_button.disabled = true;
     }
 
     // When a top card has moved
-    function on_move_top_card(data){
+    function on_move_top_card(data)
+    {
         // Remove the old top card
         document.getElementById(data.topcard).remove();
         // Make the top card and put it on the new
@@ -508,7 +621,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // When the current player moves one of the top cards
     // to another top card
-    function move_top_card(new_bottom_card){
+    function move_top_card(new_bottom_card)
+    {
         socket.emit('movetopcard',
             {'new_bottomcard': new_bottom_card,
              'topcard': selected_top_card});
@@ -523,16 +637,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Try passing the cards
     // If passing the cards is possible,
     // the server will emit the event to everyone
-    function try_passcards(){
+    function try_passcards()
+    {
         socket.emit('passcards', {'cards': selected_cards});
     }
 
     // Some player passed using cards
-    function on_passcards(data){
+    function on_passcards(data)
+    {
         var amount = data.cards.length;
-        if (data.player == username){
+        if (data.player == username)
+        {
             do_passcards();
-        }else{
+        }
+        else
+        {
             // Edit the amount of cards of the player passing on
             var player_count = document.
                 getElementById('cardcount' + current_player);
@@ -540,7 +659,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                      - amount;
         }
         // Add the cards to the table
-        for(var i = 0; i < amount; i++){
+        for(var i = 0; i < amount; i++)
+        {
             // Create a new bottom-top card pair
             const pair = document.createElement('div');
             pair.className = "table-card-pair";
@@ -554,9 +674,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // User passes cards using extra cards
-    function do_passcards(){
+    function do_passcards()
+    {
         // Remove the cards from your hand
-        for(var i = 0; i < selected_cards.length; i++){
+        for(var i = 0; i < selected_cards.length; i++)
+        {
             var card = document.getElementById(selected_cards[i]);
             card.remove();
         }
@@ -567,12 +689,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Try passing the cards
     // If passing the cards is possible,
     // the server will emit the event to everyon
-    function try_passtrump(){
+    function try_passtrump()
+    {
         socket.emit('passtrump', {});
     }
 
     // Some player passed using trump
-    function on_passtrump(data){
+    function on_passtrump(data)
+    {
         update_current_player(data.newplayer);
     }
 
@@ -581,15 +705,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Change everything after the round is finished
-    function on_finish_round(data){
+    function on_finish_round(data)
+    {
         // Clear all cards from the table
         table_cards.innerHTML = '';
-        if(data.cards){
+        if(data.cards)
+        {
             // Reload the cards in the player's hand
             // Only if the player is not a spectator
-            for(var i = 0; i < data.cards.length; i++){
+            for(var i = 0; i < data.cards.length; i++)
+            {
                 var card_id = "card" + data.cards[i];
-                if(!document.getElementById(card_id)) {
+                if(!document.getElementById(card_id)) 
+                {
                     const card = make_card(card_id);
                     own_cards.append(card);
                 }
@@ -599,10 +727,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update other players
         var other_players = document.getElementById('otherplayers').
             getElementsByTagName('div');
-        for(var i = 0; i < other_players.length; i++){
+        for(var i = 0; i < other_players.length; i++)
+        {
             var name = other_players[i].id.replace('player', '');
 
-            if(data.cardcounts[name]){
+            if(data.cardcounts[name])
+            {
                 // The player is still in the game
                 // Update the card count
                 var count = document.getElementById('cardcount' + name);
@@ -613,7 +743,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 {
                     other_players[i].classList.remove('allowed-break-player');
                 }
-            }else{
+            }
+            else
+            {
                 // The player has finished playing
                 var player = document.getElementById('player' + name);
                 player.classList.add('finished-player');
@@ -626,35 +758,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
         update_current_player(data.newplayer);
 
-        if (!data.cardcounts[username]){
+        if (!data.cardcounts[username])
+        {
             // The buttons get removed for spectators
             var only_players = document.getElementById('onlyplayers');
-            if(only_players){
+            if(only_players)
+            {
                 only_players.remove();
             }
         }
    }
 
-    function update_current_player(new_player){
+    function update_current_player(new_player)
+    {
         // If you were the current player
         if (current_player == username
-            && new_player != username){
+            && new_player != username)
+        {
             // You can be the current player
             // twice in a row
             on_not_current_player();
         }
-        else if(new_player == username){
+        else if(new_player == username)
+        {
             on_current_player();
         }
         // Remove styling from previous current player
         var player = document.getElementById('player' + current_player);
-        if(player){
+        if(player)
+        {
             // Only if the current player had styling
             player.className = player.className.replace(' current-player', '');
         }
         // Add styling to the current player
         player = document.getElementById('player' + new_player);
-        if(player){
+        if(player)
+        {
             player.className += ' current-player';
         }
         // Update the current player
@@ -664,19 +803,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // When this player becomes the current player
-    function on_current_player(){
+    function on_current_player()
+    {
         current_player_buttons.style.display = 'block';
         allow_break_button.style.display = 'none';
     }
 
     // When this player stops being the current player
-    function on_not_current_player(){
+    function on_not_current_player()
+    {
         current_player_buttons.style.display = 'none';
         allow_break_button.style.display = 'block';
     }
 
     // Create a card
-    function make_card(card_id){
+    function make_card(card_id)
+    {
         const card = document.createElement('img');
         card.src = image_dir + card_id.replace("card", "") + ".png";
         card.id = card_id;
