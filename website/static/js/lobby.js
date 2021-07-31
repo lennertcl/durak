@@ -1,14 +1,20 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => 
+{
     var socket = io();
 
-    // When user connects to the game
-    socket.on('connect', () => {
+
+    // SOCKETIO EVENTS 
+
+
+    socket.on('connect', () => 
+    {
         socket.emit('join', {"username": username});
     });
 
-    // Events when something changes to game status
-    socket.on('status', data => {
-        switch(data.event){
+    socket.on('status', data => 
+    {
+        switch(data.event)
+        {
             case 'joined':
                 on_join(data);
             break;
@@ -20,24 +26,46 @@ document.addEventListener('DOMContentLoaded', () => {
             break;
             case 'message':
                 on_message(data)
+            break;
         }
     });
     
-    // When user clicks the start game button
-    document.querySelector('#start_button').onclick = () => {
+
+    // BUTTON EVENTS
+
+
+    document.querySelector('#start_button').onclick = () => 
+    {
         socket.emit('startgame', {});
     };
 
-    // When user clicks the leave button
-    document.querySelector('#leave_button').onclick = () => {
+    document.querySelector('#leave_button').onclick = () => 
+    {
         socket.emit('leave', {'username': username});
     };
 
-    // Some player joins the game
-    function on_join(data){
-        // Add to the player list
+
+    // HELPER FUNCTIONS
+
+
+    /**
+     * Add a player to the lobby
+     *  
+     * @param {object} data 
+     *      Object containing data about player joining event
+     *      {
+     *          'event': 'joined',
+     *          'username': <username of the player joining>
+     *      }
+     * 
+     * If the player wasn't already in the list of players, the player is added
+     * to the list of players
+     */
+    function on_join(data)
+    {
         p = document.getElementById("sideplayer" + data.username);
-        if (!p){
+        if (!p)
+        {
             const p = document.createElement('p');
             p.innerHTML = data.username;
             p.id = "sideplayer" + data.username;
@@ -45,20 +73,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Some player leaves the game
-    function on_left(data){
-        // Remove from the player list
+    /**
+     * Remove a player from the lobby 
+     * 
+     * @param {object} data 
+     *      Object containing data about player leaving event
+     *      {
+     *          'event': 'left',
+     *          'username': <username of the player leaving>
+     *      }
+     */
+    function on_left(data)
+    {
         p = document.getElementById("sideplayer" + data.username);
         document.querySelector('#players_list').removeChild(p);
     }
 
-    // When the game starts
-    function on_startgame(data){
+    function on_startgame()
+    {
         window.location.href = game_url;
     }
 
-    // Server sends a message to the lobby
-    function on_message(data){
+    /**
+     * Create a new flashed message
+     *  
+     * @param {object} data 
+     *      Object containing message data
+     *      {
+     *          'event': 'message',
+     *          'body': <body string of the message>,
+     *          'type': <type of bootstrap alert (e.g. danger, info)>
+     *      }
+     */
+    function on_message(data)
+    {
         messages = document.getElementById("flashed-messages");
         const message = document.createElement("div");
         message.className = "alert alert-" + data.type;
