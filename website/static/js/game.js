@@ -75,30 +75,15 @@ document.addEventListener('DOMContentLoaded', () =>
     // BUTTON EVENTS
 
 
-    document.querySelector('#takecards').onclick = () => 
-    {
-        takecards();
-    }
+    document.querySelector('#takecards').onclick = takecards;
     
-    document.querySelector('#breakcards').onclick = () =>
-    {
-        try_breakcards();
-    }
+    document.querySelector('#breakcards').onclick = try_breakcards;
 
-    document.querySelector('#passcards').onclick = () => 
-    {
-        try_passcards();
-    }
+    document.querySelector('#passcards').onclick = try_passcards;
 
-    document.querySelector('#passtrump').onclick = () => 
-    {
-        try_passtrump();
-    }
+    document.querySelector('#passtrump').onclick = try_passtrump;
 
-    document.querySelector('#allowbreakbutton').onclick = () => 
-    {
-        allow_breakcards();
-    }
+    document.querySelector('#allowbreakbutton').onclick = allow_breakcards;
 
     document.querySelector('#leave_button').onclick = () => 
     {
