@@ -1,5 +1,5 @@
-from flask import (render_template, url_for, redirect, 
-                   abort, session, flash)
+from flask import (render_template, url_for, redirect, current_app, abort,
+                   session, flash)
 from flask_login import current_user, login_required
 from website import db, gameManager, socketio
 from website.games.forms import GameForm
@@ -87,4 +87,5 @@ def game(game_id):
                 current_player=game.current_player.username,
                 other_players=other_players,
                 spectating=spectating,
-                allowed_break_players=allowed_break_players)
+                allowed_break_players=allowed_break_players,
+                chat_options=current_app.config["CHAT_OPTIONS"])

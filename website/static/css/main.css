@@ -85,6 +85,31 @@
     transform: translate(-50%, 0);
 }
 
+.control-button{
+    width: 100%;
+}
+
+.chat-option{
+    width:100%;
+}
+
+.chat-closed{
+    display:none;
+}
+
+.chat-open{
+    display:block;
+    position:absolute;
+    margin-top:-380px;
+    margin-right:15px;
+}
+
+.chat-popup{
+    color:black;
+    position:absolute;
+    width:100%;
+}
+
 
 /* CARDS */
 

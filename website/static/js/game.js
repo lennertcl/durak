@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () =>
             case 'startgame':
                 location.reload();
             break;
+            case 'chat':
+                on_chat(data)
+            break;
         }
     });
 
@@ -94,6 +97,10 @@ document.addEventListener('DOMContentLoaded', () =>
     {
         socket.emit('startgame', {})
     }
+
+    document.querySelector('#chat_button').onclick = toggle_chat_options;
+
+    document.querySelector('#chat_options').onclick = on_chat_options_click;
 
 
     // CARD EVENTS
@@ -172,6 +179,24 @@ document.addEventListener('DOMContentLoaded', () =>
         {
             p.remove();
         }
+    }
+
+    /**
+     * Display a chat message popup
+     * 
+     * @param {object} data 
+     *      Object containing data about chat event
+     *      {
+     *          'event': 'chat',
+     *          'content': <content of the message sent>,
+     *          'player': <username of the player sending the chat> 
+     *      }
+     * 
+     * A popup is displayed at the player's position 
+     */
+    function on_chat(data)
+    {
+        document.getElementById("chat" + data.player).innerText = data.content;
     }
 
 
@@ -809,5 +834,35 @@ document.addEventListener('DOMContentLoaded', () =>
         card.id = card_id;
         card.className = "card";
         return card;
+    }
+
+    /**
+     * Opens or closes the chat options menu
+     */
+    function toggle_chat_options()
+    {
+        const chat_options = document.getElementById('chat_options');
+        if (chat_options.className == 'chat-open')
+        {
+            chat_options.className = 'chat-closed';
+        }
+        else
+        {
+            chat_options.className = 'chat-open';
+        }
+    }
+
+    /**
+     * Sends a chat message to the server
+     *  
+     * @param {*} event 
+     *      The onclick event
+     * 
+     * Emits the chat event to the server and closes the chat window
+     */
+    function on_chat_options_click(event)
+    {
+        socket.emit('chat', {'content': event.target.innerText});
+        toggle_chat_options();
     }
 }) 

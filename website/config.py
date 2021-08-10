@@ -1,5 +1,4 @@
 import os
-import secrets
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,3 +13,5 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('EMAIL_USER')
     MAIL_PASSWORD = os.environ.get('EMAIL_PASS')
+    CHAT_OPTIONS = ["Haha", "Nice", "Good luck", "Good game", 
+                    "&#128518;", "&#128521;", "&#128544;", "&#128550;", "&#128557;"]

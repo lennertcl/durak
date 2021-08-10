@@ -32,6 +32,15 @@ def leave(data):
     if is_next_round:
         emit_finish_round(game)
 
+# Event when a user sends a chat message
+@socketio.on("chat")
+def chat(data):
+    game, player = get_game_and_player()
+    event = {"event": "chat",
+             "content": data["content"],
+             "player": player.username}
+    emit('status', event, room=game.id)
+
 # Event when a user clicks start game button
 @socketio.on("startgame")
 def start_game(data):

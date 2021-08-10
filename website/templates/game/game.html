@@ -19,6 +19,7 @@
                     <div class="other-player player{{ pos }} {{ 'allowed-break-player' if other_player in allowed_break_players }}" id="player{{ other_player.username }}">
                         <p>{{ other_player.username }}</p>
                         <p id="cardcount{{ other_player.username }}">{{ other_player.get_card_count() }}</p>
+                        <div class="chat-popup" id="chat{{ other_player.username }}"></div>
                     </div>
                 {% endfor %}
             </div>
@@ -84,8 +85,15 @@
         </div>
     </div>
     <div class="col-md-4">
-        <button id="start_button" class="btn btn-primary">New game</button>
-        <a href=" {{ url_for('main.home') }} " id="leave_button" class="btn btn-danger">Leave game</a>
+        <h2>Game control</h2>
+        <button id="chat_button" class="btn btn-dark control-button">Chat</button>
+        <div id="chat_options" class="chat-closed">
+            {% for option in chat_options %}
+                <span class="btn btn-secondary chat-option">{{ option | safe }}</span>
+            {% endfor %}
+        </div>
+        <button id="start_button" class="btn btn-primary control-button">New game</button>
+        <a href=" {{ url_for('main.home') }} " id="leave_button" class="btn btn-danger control-button">Leave game</a>
     </div>
 </div>
 
