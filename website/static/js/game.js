@@ -1,16 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => 
 {
     var socket = io();
-    var selected_cards = [];
-    var selected_top_card = null;
+    var selectedCards = [];
+    var selectedTopCard = null;
 
-    const own_cards = document.getElementById('owncards');
-    const table_cards = document.getElementById('tablecards');
-    const current_player_buttons = document.getElementById('currentplayerbuttons');
-    const allow_break_button = document.getElementById('allowbreakbutton');
+    const ownCards = document.getElementById('owncards');
+    const tableCards = document.getElementById('tablecards');
+    const currentPlayerButtons = document.getElementById('currentplayerbuttons');
+    const allowBreakButton = document.getElementById('allowbreakbutton');
 
     // Execute once when loading the page
-    on_startgame();
+    onStartGame();
 
 
     // SOCKETIO EVENTS
@@ -26,19 +26,19 @@ document.addEventListener('DOMContentLoaded', () =>
         switch(data.event)
         {
             case 'joined':
-                on_join(data);
+                onJoin(data);
             break;
             case 'left':
-                on_left(data);
+                onLeft(data);
             break;
             case 'finishround':
-                on_finish_round(data);
+                onFinishRound(data);
             break;
             case 'startgame':
                 location.reload();
             break;
             case 'chat':
-                on_chat(data)
+                onChat(data)
             break;
         }
     });
@@ -48,28 +48,28 @@ document.addEventListener('DOMContentLoaded', () =>
         switch(data.event)
         {
             case 'throwcards':
-                on_throwcards(data);
+                onThrowCards(data);
             break;
             case 'takecards':
-                on_takecards();
+                onTakeCards();
             break;
             case 'breakcards':
-                on_breakcards(data);
+                onBreakCards(data);
             break;
             case 'breakcard':
-                on_breakcard(data);
+                onBreakCard(data);
             break;
             case 'passcards':
-                on_passcards(data);
+                onPassCards(data);
             break;
             case 'passtrump':
-                on_passtrump(data);
+                onPassTrump(data);
             break;
             case 'movetopcard':
-                on_move_top_card(data);
+                onMoveTopCard(data);
             break;
             case 'allowbreak':
-                on_allow_break(data);
+                onAllowBreak(data);
             break;
         }
     });
@@ -78,15 +78,15 @@ document.addEventListener('DOMContentLoaded', () =>
     // BUTTON EVENTS
 
 
-    document.querySelector('#takecards').onclick = takecards;
+    document.querySelector('#takecards').onclick = takeCards;
     
-    document.querySelector('#breakcards').onclick = try_breakcards;
+    document.querySelector('#breakcards').onclick = tryBreakCards;
 
-    document.querySelector('#passcards').onclick = try_passcards;
+    document.querySelector('#passcards').onclick = tryPassCards;
 
-    document.querySelector('#passtrump').onclick = try_passtrump;
+    document.querySelector('#passtrump').onclick = tryPassTrump;
 
-    document.querySelector('#allowbreakbutton').onclick = allow_breakcards;
+    document.querySelector('#allowbreakbutton').onclick = allowBreakCards;
 
     document.querySelector('#leave_button').onclick = () => 
     {
@@ -98,37 +98,37 @@ document.addEventListener('DOMContentLoaded', () =>
         socket.emit('startgame', {})
     }
 
-    document.querySelector('#chat_button').onclick = toggle_chat_options;
+    document.querySelector('#chat_button').onclick = toggleChatOptions;
 
-    document.querySelector('#chat_options').onclick = on_chat_options_click;
+    document.querySelector('#chat_options').onclick = onChatOptionsClick;
 
 
     // CARD EVENTS
 
 
-    // Prevent default to make sure drop events work as expected
     document.addEventListener("dragover", event => 
     {
+        // Prevent default to make sure drop events work as expected
         event.preventDefault();
     });
 
-    own_cards.addEventListener('click', on_own_cards_click);
+    ownCards.addEventListener('click', onOwnCardsClick);
 
-    own_cards.addEventListener('dragstart', on_own_cards_drag);
+    ownCards.addEventListener('dragstart', onOwnCardsDrag);
 
-    table_cards.addEventListener('click', on_table_cards_click);
+    tableCards.addEventListener('click', onTableCardsClick);
 
-    table_cards.addEventListener('dragstart', on_table_cards_drag);
+    tableCards.addEventListener('dragstart', onTableCardsDrag);
 
-    table_cards.addEventListener('drop', on_table_cards_click);
+    tableCards.addEventListener('drop', onTableCardsClick);
 
 
     // GAME STATUS
 
 
-    function on_startgame()
+    function onStartGame()
     {
-        update_current_player(current_player);
+        updateCurrentPlayer(currentPlayer);
     }
 
     /**
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () =>
      * If the player wasn't already in the list of players, the player is added
      * to the list of players
      */
-    function on_join(data)
+    function onJoin(data)
     {
         p = document.getElementById("sideplayer" + data.username);
         if (!p)
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () =>
      * The player is removed from the player list
      * If the player was still playing he is removed from the table
      */
-    function on_left(data)
+    function onLeft(data)
     {
         var p = document.getElementById("sideplayer" + data.username);
         p.remove();
@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () =>
      * 
      * A popup is displayed at the player's position 
      */
-    function on_chat(data)
+    function onChat(data)
     {
         document.getElementById("chat" + data.player).innerText = data.content;
     }
@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () =>
      * If the clicked element is actually a card then the card is unselected
      * if it was already selected and selected if it wasn't
      */
-    function on_own_cards_click(event)
+    function onOwnCardsClick(event)
     {
         let card = event.target.id;
 
@@ -221,13 +221,13 @@ document.addEventListener('DOMContentLoaded', () =>
             return;
         }
 
-        if (selected_cards.includes(card))
+        if (selectedCards.includes(card))
         {
-            unselect_card(card);
+            unselectCard(card);
         }
         else
         {
-            select_card(card);
+            selectCard(card);
         }
     }
 
@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () =>
      * are thrown on the table if the user is not the current player.
      * Otherwise the player clicked a card on the table.
      */
-    function on_table_cards_click(event)
+    function onTableCardsClick(event)
     {
         // Prevent reloading
         event.preventDefault();
@@ -249,17 +249,17 @@ document.addEventListener('DOMContentLoaded', () =>
         let target = event.target;
 
         // User throws new cards onto table
-        if(target.id == table_cards.id)
+        if(target.id == tableCards.id)
         {
             // Only other players can throw cards
-            if(current_player != username)
+            if(currentPlayer != username)
             {
-                try_throwcards();
+                tryThrowCards();
             }
         }
         else
         {
-            on_table_card_click(target);
+            onTableCardClick(target);
         }
     }
 
@@ -276,23 +276,23 @@ document.addEventListener('DOMContentLoaded', () =>
      * Otherwise, if the user is the current player and he clicks a top card,
      * the top card is selected or unselected.
      */
-    function on_table_card_click(target)
+    function onTableCardClick(target)
     {
         // You can only throw 1 card on top of other card
-        if (selected_cards.length == 1)
+        if (selectedCards.length == 1)
         {
             breakcard(target.id);
         }
         // Current player can move top cards
-        else if (current_player == username)
+        else if (currentPlayer == username)
         {
-            if (target.className.includes('bottom-card') && selected_top_card)
+            if (target.className.includes('bottom-card') && selectedTopCard)
             {
-                move_top_card(target.id);
+                moveTopCard(target.id);
             }
             else if (target.className.includes('top-card'))
             {
-                select_or_unselect_top_card(target.id);
+                selectOrUnselectTopCard(target.id);
             }
         }
     }
@@ -310,12 +310,12 @@ document.addEventListener('DOMContentLoaded', () =>
      * If no cards were selected and the user starts dragging from a card,
      * this card is added to the selected cards
      */
-    function on_own_cards_drag(event)
+    function onOwnCardsDrag(event)
     {
         var card = event.target;
         if (card.id.includes('card'))
         {
-            select_card(card.id);
+            selectCard(card.id);
         }
     }
 
@@ -325,13 +325,13 @@ document.addEventListener('DOMContentLoaded', () =>
      * @param {*} event 
      *      The ondrag event 
      */
-    function on_table_cards_drag(event)
+    function onTableCardsDrag(event)
     {
         target = event.target;
-        if (username == current_player && target.className.includes('top-card'))
+        if (username == currentPlayer && target.className.includes('top-card'))
         {
-            unselect_top_card();
-            select_top_card(target.id);
+            unselectTopCard();
+            selectTopCard(target.id);
         }
     }
 
@@ -344,14 +344,14 @@ document.addEventListener('DOMContentLoaded', () =>
      * If the card is already selected, nothing happens
      * Otherwise the card is added to the selected cards and styling is added
      */
-    function select_card(card)
+    function selectCard(card)
     {
-        if (selected_cards.includes(card))
+        if (selectedCards.includes(card))
         {
             return;
         }
 
-        selected_cards.push(card);
+        selectedCards.push(card);
         document.getElementById(card).classList.add('selected-card');
     }
 
@@ -365,14 +365,14 @@ document.addEventListener('DOMContentLoaded', () =>
      * Otherwise the card is removed from the selected cards and styling
      * is removed
      */
-    function unselect_card(card)
+    function unselectCard(card)
     {
-        if (!selected_cards.includes(card))
+        if (!selectedCards.includes(card))
         {
             return;
         }
 
-        selected_cards = selected_cards.filter((value) => value != card);
+        selectedCards = selectedCards.filter((value) => value != card);
         document.getElementById(card).classList.remove('selected-card');
     }
 
@@ -383,40 +383,38 @@ document.addEventListener('DOMContentLoaded', () =>
      * @param {string} clicked_card 
      *      ID of the card
      */
-    function select_or_unselect_top_card(clicked_card)
+    function selectOrUnselectTopCard(clicked_card)
     {
-        // Unselecting the top card
-        if(selected_top_card == clicked_card)
+        if(selectedTopCard == clicked_card)
         {
-            unselect_top_card();
+            unselectTopCard();
         }
-        // Selecting a top card
-        else if(!selected_top_card)
+        else if(!selectedTopCard)
         {
-            select_top_card(clicked_card);
+            selectTopCard(clicked_card);
         }
     }
     
     /**
-     * @param {string} card_to_select
+     * @param {string} cardToSelect
      *      ID of the card to select
      */
-    function select_top_card(card_to_select)
+    function selectTopCard(cardToSelect)
     {
-        selected_top_card = card_to_select;
+        selectedTopCard = cardToSelect;
 
-        const card = document.getElementById(selected_top_card);
+        const card = document.getElementById(selectedTopCard);
         card.classList.add('selected-card');
     }
 
-    function unselect_top_card()
+    function unselectTopCard()
     {
-        const card = document.getElementById(selected_top_card);
+        const card = document.getElementById(selectedTopCard);
         if (card) 
         {
             card.classList.remove('selected-card');
         }
-        selected_top_card = null;
+        selectedTopCard = null;
     }
 
 
@@ -428,11 +426,10 @@ document.addEventListener('DOMContentLoaded', () =>
      * 
      * A throwcards event is emitted to the backend
      */
-    function try_throwcards()
+    function tryThrowCards()
     {
-        socket.emit('throwcards', 
-            {'username': username,
-             'cards': selected_cards});
+        socket.emit('throwcards', {'username': username, 
+                                   'cards': selectedCards});
     }
 
     /**
@@ -450,17 +447,17 @@ document.addEventListener('DOMContentLoaded', () =>
      * Otherwise, edit the throwing player's card count 
      * Show all thrown cards on the table
      */
-    function on_throwcards(data)
+    function onThrowCards(data)
     {
         if (username == data.player)
         {
-            do_throwcards();
+            doThrowCards();
         }
         else
         {
-            var player_count = document.
+            var playerCount = document.
                 getElementById('cardcount' + data.player);
-            player_count.innerHTML = parseInt(player_count.innerHTML)
+            playerCount.innerHTML = parseInt(playerCount.innerHTML)
                                         - data.cards.length;
         }
 
@@ -470,10 +467,10 @@ document.addEventListener('DOMContentLoaded', () =>
             const pair = document.createElement('div');
             pair.className = "table-card-pair";
             // Set the bottom card to the thrown card
-            const card = make_card(data.cards[i]);
+            const card = makeCard(data.cards[i]);
             card.className = "card bottom-card";
             pair.append(card);
-            table_cards.append(pair);
+            tableCards.append(pair);
         }
     }
 
@@ -483,63 +480,68 @@ document.addEventListener('DOMContentLoaded', () =>
      * The cards are removed from your hand
      * Your selected cards are cleared
      */
-    function do_throwcards()
+    function doThrowCards()
     {
-        for(var i = 0; i < selected_cards.length; i++)
+        for(var i = 0; i < selectedCards.length; i++)
         {
-            var card = document.getElementById(selected_cards[i]);
+            var card = document.getElementById(selectedCards[i]);
             card.remove();
         }
 
-        selected_cards = [];
+        selectedCards = [];
     }
 
 
     // TAKING CARDS
 
 
-    // Some player takes cards into his hand
-    function on_takecards()
+    /**
+     * Take cards into the hands of the taking player
+     * 
+     * If the player taking the cards is not this player, the number of cards is
+     * added to the taking player's number of cards.
+     */
+    function onTakeCards()
     {
-        // Add the number of cards to the taking 
-        // player's number of cards
-        if(current_player != username)
+        if(currentPlayer != username)
         {
-            // Only if it's another player
-            var player_count = document.
-                getElementById('cardcount' + current_player);
-            var table_card_count = table_cards.
-                getElementsByClassName('table-card-pair').length;
-            player_count.innerHTML = parseInt(player_count.innerHTML)
-                                     + table_card_count;
+            var playerCount = document.getElementById('cardcount' + currentPlayer);
+            var tableCardCount = tableCards.getElementsByClassName('table-card-pair').length;
+
+            playerCount.innerHTML = parseInt(playerCount.innerHTML)
+                                     + tableCardCount;
         }
     }
 
-    // Take cards into hand
-    function takecards()
+    /**
+     * Take cards into this player's hands
+     * 
+     * The user is prevented from taking cards before any cards were thrown.
+     * The event is emitted to the server.
+     * The cards are taken into the user's hands: both bottom and top cards are
+     * taken from the table and put into the user's hands.
+     */
+    function takeCards()
     {
-        var pairs = table_cards.getElementsByClassName('table-card-pair');
-        // Prevent the user from pressing take cards before
-        // any cards where thrown
+        var pairs = tableCards.getElementsByClassName('table-card-pair');
+
         if(pairs.length == 0)
         {
             return;
         }
-        // Let the other players know
+
         socket.emit('takecards', {});
-        // Add the cards to your hand
+
         for(var i = 0; i < pairs.length; i++)
         {
-            // Take bottom and top cards of table
-            // Add to your own cards
             var cards = pairs[i].getElementsByTagName('img');
-            const bottom_card = make_card(cards[0].id);
-            own_cards.append(bottom_card);
+            const bottomCard = makeCard(cards[0].id);
+            ownCards.append(bottomCard);
+
             if (cards.length == 2)
             {
-                // If there is a top card
-                const top_card = make_card(cards[1].id);
-                own_cards.append(top_card);
+                const topCard = makeCard(cards[1].id);
+                ownCards.append(topCard);
             }
         }
     }
@@ -548,59 +550,81 @@ document.addEventListener('DOMContentLoaded', () =>
     // BREAKING CARDS
 
 
-    // Some player breaks the cards
-    function on_breakcards(data)
+    /**
+     * Another player breaks the cards 
+     * 
+     * @param {object} data 
+     *      The event data
+     * 
+     * For now everything is handled by onFinishRound, but this will probably
+     * change when cheating is implemented
+     */
+    function onBreakCards(data)
     {
-        // on_finish_round handles everything
-        // except cheating?
     }
 
-    // Take cards into hand
-    function try_breakcards()
+    function tryBreakCards()
     {
-        socket.emit('breakcards', 
-            {'username': username});
+        socket.emit('breakcards', {'username': username});
     }
 
-    // Some player breaks a card
-    function on_breakcard(data)
+    /**
+     * Make another user break a card
+     *  
+     * @param {object} data 
+     *      Object containing data about the break card event
+     *      {
+     *          'event': 'breakcard',
+     *          'bottomcard': <id of the card getting broken>,
+     *          'topcard': <id of the card used to break>,
+     *          'player': <username of the player breaking the card>
+     *      }
+     * 
+     * If the player breaking the card is this user, the card is removed
+     * from the user's hand and the selected cards are cleared.
+     * Otherwise, the amount of cards of the breaking player is updated.
+     * The top card is displayed on top of the bottom card of the table.
+     */
+    function onBreakCard(data)
     {
         if(data.player == username)
         {
-            // Remove the cards from your hand if you
-            // threw them
-            document.getElementById(selected_cards[0]).remove();
-            // Clear the selected cards
-            selected_cards = [];
+            document.getElementById(selectedCards[0]).remove();
+            selectedCards = [];
         }
         else
         {
-            // Edit the amount of cards of the player breaking
-            var player_count = document.
-                getElementById('cardcount' + current_player);
-            player_count.innerHTML = parseInt(player_count.innerHTML) - 1;
+            var playerCount = document.
+                getElementById('cardcount' + currentPlayer);
+            playerCount.innerHTML = parseInt(playerCount.innerHTML) - 1;
         }
-        // Get the bottom card on the table
+
         var pair = document.getElementById(data.bottomcard).parentElement;
-        // Make the top card and put it on the table
-        const card = make_card(data.topcard);
+        const card = makeCard(data.topcard);
         card.className = "card top-card";
         pair.append(card);
     }
 
-    // Break a card: put another card on top of it
-    // This can only be called when you only have
-    // one selected card
-    function breakcard(bottom_card)
+    /**
+     * @param {string} bottomCard 
+     *      Id of the card that is getting broken
+     */
+    function breakcard(bottomCard)
     {
-        socket.emit('breakcard',
-            {'username': username,
-             'bottomcard': bottom_card,
-             'topcard': selected_cards[0]});
+        socket.emit('breakcard', {'username': username,
+                                  'bottomcard': bottomCard,
+                                  'topcard': selectedCards[0]});
     }
 
-    // When a user allows break cards
-    function on_allow_break(data)
+    /**
+     * @param {object} data 
+     *      Object containing information about the allow break event
+     *      {
+     *          'event': 'allowbreak',
+     *          'player': <username of the player allowing the break>
+     *      }
+     */
+    function onAllowBreak(data)
     {
         if(data.player != username)
         {
@@ -609,229 +633,283 @@ document.addEventListener('DOMContentLoaded', () =>
         }
     }
 
-    // When a user clicks the allow break cards button
-    function allow_breakcards()
+    function allowBreakCards()
     {
         socket.emit('allowbreak', {});
-        allow_break_button.disabled = true;
+        allowBreakButton.disabled = true;
     }
 
-    // When a top card has moved
-    function on_move_top_card(data)
+    /**
+     * Move a top card
+     * 
+     * @param {object} data 
+     *      Object containing information about the move top card event
+     *      {
+     *          'event': 'movetopcard',
+     *          'new_bottomcard': <id of the destination bottom card>,
+     *          'topcard': <id of the top card getting moved> 
+     *      }
+     * 
+     * The old top card is removed and a new top card is put on top of the
+     * given destination bottom card.
+     */
+    function onMoveTopCard(data)
     {
-        // Remove the old top card
         document.getElementById(data.topcard).remove();
-        // Make the top card and put it on the new
-        // bottom card
+
         var pair = document.getElementById(data.new_bottomcard).parentElement;
-        const card = make_card(data.topcard);
+        const card = makeCard(data.topcard);
         card.className = "card top-card";
         pair.append(card);
     }
 
-    // When the current player moves one of the top cards
-    // to another top card
-    function move_top_card(new_bottom_card)
+    /**
+     * @param {string} newBottomCard 
+     *      Id of the destination bottom card
+     */
+    function moveTopCard(newBottomCard)
     {
-        socket.emit('movetopcard',
-            {'new_bottomcard': new_bottom_card,
-             'topcard': selected_top_card});
-
-        unselect_top_card();
+        socket.emit('movetopcard', {'new_bottomcard': newBottomCard,
+                                    'topcard': selectedTopCard});
+        unselectTopCard();
     }
 
 
     // PASSING CARDS
 
 
-    // Try passing the cards
-    // If passing the cards is possible,
-    // the server will emit the event to everyone
-    function try_passcards()
+    function tryPassCards()
     {
-        socket.emit('passcards', {'cards': selected_cards});
+        socket.emit('passcards', {'cards': selectedCards});
     }
 
-    // Some player passed using cards
-    function on_passcards(data)
+    /**
+     * Pass cards on the table
+     * 
+     * @param {object} data 
+     *      Object containing information about the pass cards event
+     *      {
+     *          'event': 'passcards', 
+     *          'player': <username of the player passing the cards>,
+     *          'newplayer': <username of the new current player>,
+     *          'cards': <list of ids of cards getting passed>
+     *      }
+     * 
+     * If the player passing the cards is the user, pass the cards.
+     * Otherwise, edit the amount of cards the player is passing on.
+     * Add the cards to the table.
+     * Update the current player.
+     */
+    function onPassCards(data)
     {
         var amount = data.cards.length;
         if (data.player == username)
         {
-            do_passcards();
+            doPassCards();
         }
         else
         {
-            // Edit the amount of cards of the player passing on
-            var player_count = document.
-                getElementById('cardcount' + current_player);
-            player_count.innerHTML = parseInt(player_count.innerHTML)
-                                     - amount;
+            var playerCount = document.getElementById('cardcount' + currentPlayer);
+            playerCount.innerHTML = parseInt(playerCount.innerHTML) - amount;
         }
-        // Add the cards to the table
+
         for(var i = 0; i < amount; i++)
         {
-            // Create a new bottom-top card pair
             const pair = document.createElement('div');
             pair.className = "table-card-pair";
-            // Set the bottom card to the thrown card
-            const card = make_card(data.cards[i]);
+
+            const card = makeCard(data.cards[i]);
             card.className = "card bottom-card";
             pair.append(card);
-            table_cards.append(pair);
+            tableCards.append(pair);
         }
-        update_current_player(data.newplayer);
+
+        updateCurrentPlayer(data.newplayer);
     }
 
-    // User passes cards using extra cards
-    function do_passcards()
+    /**
+     * Let this user pass cards with cards of his own hand
+     * 
+     * The cards are removed from your hand and the selected cards are cleared.
+     */
+    function doPassCards()
     {
-        // Remove the cards from your hand
-        for(var i = 0; i < selected_cards.length; i++)
+        for(var i = 0; i < selectedCards.length; i++)
         {
-            var card = document.getElementById(selected_cards[i]);
+            var card = document.getElementById(selectedCards[i]);
             card.remove();
         }
-        // Clear the selected cards
-        selected_cards = [];
+
+        selectedCards = [];
     }
     
-    // Try passing the cards
-    // If passing the cards is possible,
-    // the server will emit the event to everyon
-    function try_passtrump()
+    function tryPassTrump()
     {
         socket.emit('passtrump', {});
     }
 
-    // Some player passed using trump
-    function on_passtrump(data)
+    /**
+     * @param {object} data 
+     *      Object containing information about the pass trump event
+     *      {
+     *          'event': 'passtrump',
+     *          'newplayer': <username of the new current player>
+     *      }
+     */
+    function onPassTrump(data)
     {
-        update_current_player(data.newplayer);
+        updateCurrentPlayer(data.newplayer);
     }
 
 
     // HELPER FUNCTIONS
 
 
-    // Change everything after the round is finished
-    function on_finish_round(data)
+    /**
+     * Update everything when the round is finished
+     *  
+     * @param {object} data 
+     *      Object containing information about the finish round event
+     *      {
+     *          'event': 'finishround',
+     *          'newplayer': <username of the new current player>,
+     *          'deckcount': <new number of cards in the deck>,
+     *          'cardcounts': <new number of cards in each players hand>
+     *      }
+     * 
+     * All cards are cleared from the table.
+     * If the player is not a spectator, update the cards in the user's hand.
+     * Update the other players: 
+     *     If they are still in the game, their card count is updated and if 
+     *     they allowed break, they don't allow break anymore.
+     *     Otherwise, they are removed from the game.
+     * The card count of the deck is updated.
+     * The current player is updated.
+     * If the user is not playing the game anymore, the buttons only for players
+     * are removed.
+     */
+    function onFinishRound(data)
     {
-        // Clear all cards from the table
-        table_cards.innerHTML = '';
+        tableCards.innerHTML = '';
+
         if(data.cards)
         {
-            // Reload the cards in the player's hand
-            // Only if the player is not a spectator
             for(var i = 0; i < data.cards.length; i++)
             {
-                var card_id = "card" + data.cards[i];
-                if(!document.getElementById(card_id)) 
+                var cardId = "card" + data.cards[i];
+                if(!document.getElementById(cardId)) 
                 {
-                    const card = make_card(card_id);
-                    own_cards.append(card);
+                    const card = makeCard(cardId);
+                    ownCards.append(card);
                 }
             }
         }
 
-        // Update other players
-        var other_players = document.getElementById('otherplayers').
+        var otherPlayers = document.getElementById('otherplayers').
             getElementsByTagName('div');
-        for(var i = 0; i < other_players.length; i++)
+        for(var i = 0; i < otherPlayers.length; i++)
         {
-            var name = other_players[i].id.replace('player', '');
+            var name = otherPlayers[i].id.replace('player', '');
 
             if(data.cardcounts[name])
             {
-                // The player is still in the game
-                // Update the card count
                 var count = document.getElementById('cardcount' + name);
                 count.innerHTML = data.cardcounts[name];
 
-                // Nobody has allowed breaking at the beginning of a round
-                if(other_players[i].classList.contains('allowed-break-player'))
+                if(otherPlayers[i].classList.contains('allowed-break-player'))
                 {
-                    other_players[i].classList.remove('allowed-break-player');
+                    otherPlayers[i].classList.remove('allowed-break-player');
                 }
             }
             else
             {
-                // The player has finished playing
                 var player = document.getElementById('player' + name);
                 player.classList.add('finished-player');
             }
         }
 
-        // Update card count of deck
         document.getElementById('deckcount').innerHTML = 
             data.deckcount;
 
-        update_current_player(data.newplayer);
+        updateCurrentPlayer(data.newplayer);
 
         if (!data.cardcounts[username])
         {
-            // The buttons get removed for spectators
-            var only_players = document.getElementById('onlyplayers');
-            if(only_players)
+            var onlyPlayers = document.getElementById('onlyplayers');
+            if(onlyPlayers)
             {
-                only_players.remove();
+                onlyPlayers.remove();
             }
         }
-   }
+    }
 
-    function update_current_player(new_player)
+
+    /**
+     * @param {string} newPlayer 
+     *      Username of the new current player
+     * 
+     * If the user was the current player, and he is not the new current player,
+     * he is updated to not be the current player anymore.
+     * Otherwise, if the user is the new current player, he is updated to be the
+     * current player.
+     * Styling is removed from the previous current player.
+     * Styling is added to the new current player.
+     * The current player variable is updated.
+     * The allow break button is reset.
+     */
+    function updateCurrentPlayer(newPlayer)
     {
-        // If you were the current player
-        if (current_player == username
-            && new_player != username)
+        if (currentPlayer == username && newPlayer != username)
         {
-            // You can be the current player
-            // twice in a row
-            on_not_current_player();
+            onNotCurrentPlayer();
         }
-        else if(new_player == username)
+        else if(newPlayer == username)
         {
-            on_current_player();
+            onCurrentPlayer();
         }
-        // Remove styling from previous current player
-        var player = document.getElementById('player' + current_player);
+
+        var player = document.getElementById('player' + currentPlayer);
         if(player)
         {
-            // Only if the current player had styling
             player.className = player.className.replace(' current-player', '');
         }
-        // Add styling to the current player
-        player = document.getElementById('player' + new_player);
+
+        player = document.getElementById('player' + newPlayer);
         if(player)
         {
             player.className += ' current-player';
         }
-        // Update the current player
-        current_player = new_player;
-        // Reset the allow break button
-        allow_break_button.disabled = false;
+
+        currentPlayer = newPlayer;
+
+        allowBreakButton.disabled = false;
     }
 
-    // When this player becomes the current player
-    function on_current_player()
+    function onCurrentPlayer()
     {
-        current_player_buttons.style.display = 'block';
-        allow_break_button.style.display = 'none';
+        currentPlayerButtons.style.display = 'block';
+        allowBreakButton.style.display = 'none';
     }
 
-    // When this player stops being the current player
-    function on_not_current_player()
+    function onNotCurrentPlayer()
     {
-        current_player_buttons.style.display = 'none';
-        allow_break_button.style.display = 'block';
+        currentPlayerButtons.style.display = 'none';
+        allowBreakButton.style.display = 'block';
     }
 
-    // Create a card
-    function make_card(card_id)
+    /**
+     * Create a card element from a given card id
+     * 
+     * @param {string} cardId 
+     *      Id of the card to make the element of
+     * @returns element
+     *      The created card element
+     */
+    function makeCard(cardId)
     {
         const card = document.createElement('img');
-        card.src = image_dir + card_id.replace("card", "") + ".png";
-        card.id = card_id;
+        card.src = imageDir + cardId.replace("card", "") + ".png";
+        card.id = cardId;
         card.className = "card";
         return card;
     }
@@ -839,16 +917,16 @@ document.addEventListener('DOMContentLoaded', () =>
     /**
      * Opens or closes the chat options menu
      */
-    function toggle_chat_options()
+    function toggleChatOptions()
     {
-        const chat_options = document.getElementById('chat_options');
-        if (chat_options.className == 'chat-open')
+        const chatOptions = document.getElementById('chat_options');
+        if (chatOptions.className == 'chat-open')
         {
-            chat_options.className = 'chat-closed';
+            chatOptions.className = 'chat-closed';
         }
         else
         {
-            chat_options.className = 'chat-open';
+            chatOptions.className = 'chat-open';
         }
     }
 
@@ -860,9 +938,9 @@ document.addEventListener('DOMContentLoaded', () =>
      * 
      * Emits the chat event to the server and closes the chat window
      */
-    function on_chat_options_click(event)
+    function onChatOptionsClick(event)
     {
         socket.emit('chat', {'content': event.target.innerText});
-        toggle_chat_options();
+        toggleChatOptions();
     }
 }) 
