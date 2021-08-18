@@ -64,11 +64,15 @@
 }
 
 .current-player{
-    color:blue;
+    background: url(../images/blue_back.png);
+    background-size: 65px 100px;
+    background-repeat: repeat-x;
 }
 
 .allowed-break-player{
-    color:gold;
+    background: url(../images/yellow_back.png);
+    background-size: 65px 100px;
+    background-repeat: repeat-x;
 }
 
 .current-player-buttons{
