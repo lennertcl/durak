@@ -753,7 +753,7 @@ class DurakGame:
         player.remove_cards([card])
         player.add_cards([self.trump_card])
         self.trump_card = card
-        deck.add_card(card)
+        self.deck.add_card(card)
 
     def put_into_deck(self, player: Player, cards: List[Card]):
         """Player puts his own cards into the deck
