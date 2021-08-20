@@ -12,6 +12,8 @@ class Player:
         sid: str
             The session id of this player.
             Gets set when player joins a game.
+        last_cheat_call: int
+            Time when player last called another player's cheat
     """
 
     # Mapping the number of players on the table to

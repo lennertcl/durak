@@ -731,6 +731,34 @@ class DurakGame:
     # CHEATING
     # TODO cheating while another cheat of this player is active is not allowed
 
+    def can_call_other_player_cheat(self, player: Player) -> bool:
+        """Check whether a player can call somebody out for cheating"""
+        return player.last_cheat_call < time() - Cheat.DURATION
+
+    def call_other_player_cheat(self, calling_player: Player, cheating_player: Player):
+        """Call out another player for cheating
+
+        If the player was cheating and the cheat can be rolled back, the cheat
+        is rolled back, otherwise the cheat is removed
+        The last cheat call time of the calling player is updated
+
+        Args:
+            calling_player: Player
+                The player calling the cheater out
+            cheating_player: Player
+                The player getting called out
+        """
+        if not self.can_call_other_player_cheat(calling_player):
+            return
+
+        cheat = self.cheating[cheating_player]
+        if cheat and cheat.can_rollback():
+            self.cheating[cheating_player].rollback()
+        if cheat:
+            del self.cheating[cheating_player]
+
+        calling_player.last_cheat_call = time()
+
 
     def steal_trump_card(self, player: Player, card: Card):
         """Player replaces the trump card with one of his own cards
