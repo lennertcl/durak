@@ -67,7 +67,6 @@ def test_finish_round_has_broken(game):
     assert not game.prev_allows_break
     assert not game.throwing_started
 
-    # TODO this might need a fix when cheats happened right at the end of a round
     assert not game.cheating
 
 
@@ -95,7 +94,6 @@ def test_finish_round_has_taken(game):
     assert not game.prev_allows_break
     assert not game.throwing_started
 
-    # TODO this might need a fix when cheats happened right at the end of a round
     assert not game.cheating
 
 def test_finish_round_deck_empty_has_broken(game):

@@ -4,7 +4,8 @@ from time import time
 from .card import Card
 from .player import Player
 from .deck import Deck
-from .cheat import Cheat
+from .cheat import (Cheat, StealTrumpCardCheat, PutIntoDeckCheat, 
+                    ThrowIllegalCardsCheat, PassIllegalCardsCheat)
 
 class DurakGame:
     """ Class representing a game of Durak 
@@ -92,6 +93,7 @@ class DurakGame:
                 count += 1
         return count
 
+
     def add_player(self, username: str):
         """Add a player to the lobby of the game by username
         The player is only added if not in the game yet
@@ -103,6 +105,7 @@ class DurakGame:
         if not(any(p.username == username for p in self.players)):
             player = Player(username)
             self.lobby.append(player)
+
 
     def remove_player(self, player: Player) -> bool:
         """Remove a player from the game
@@ -182,6 +185,7 @@ class DurakGame:
         self.prev_allows_break = False
         self.is_in_progress = True
 
+
     def finish_round(self, has_broken: bool):
         """Finishes a round of the game
 
@@ -229,8 +233,8 @@ class DurakGame:
         self.next_allows_break = False
         self.prev_allows_break = False
 
-        # TODO Breaking cards cheat
         self.cheating.clear()
+
 
     def distribute_new_cards(self):
         """New cards are distributed to the players
@@ -268,7 +272,7 @@ class DurakGame:
         This behavior can change based on throwing_started indicator: 
         The first throw can only come from the player before the current player,
         not the player after the current player. 
-        If the throw is illegal, nothing happens and False is returned. TODO
+        If the throw is illegal, a throw cards cheat is performed if possible.
         Otherwise:
         Remove the given cards from the player's current cards. 
         Add the cards to the cards on the table (as bottom cards).
@@ -294,9 +298,9 @@ class DurakGame:
                 return False
 
         if not self.is_legal_throw_cards(player, cards, is_first_throw):
-            # TODO the player has cheated
-            print("Illegal throw by {}".format(player))
-            return False # Illegal for now
+            was_successful_cheat = self.throw_illegal_cards(player, cards)
+            if not was_successful_cheat:
+                return False
 
         self.throwing_started = True
 
@@ -304,6 +308,7 @@ class DurakGame:
         for card in cards:
             self.table_cards[card] = None
         return True
+
 
     def is_possible_throw_cards(self, cards: List[Card]) -> bool:
         """Test whether throwing the given cards onto the table is possible
@@ -320,6 +325,7 @@ class DurakGame:
                               + len(cards))
         return (cards_to_break
                 <= self.current_player.get_card_count())
+
 
     def is_legal_throw_cards(self, player: Player, cards: List[Card],
                             is_first_throw: bool = False) -> bool:
@@ -394,6 +400,7 @@ class DurakGame:
         player.remove_cards([top_card])
         return True
 
+
     def is_possible_break_card(self, bottom_card: Card, top_card: Card) -> bool:
         """Test whether a break is possible
 
@@ -411,6 +418,7 @@ class DurakGame:
         return (bottom_card in self.table_cards 
            and (self.table_cards.get(bottom_card) is None))
 
+
     def is_legal_break_card(self, player: Player) -> bool:
         """Test whether a break is legal
 
@@ -423,6 +431,7 @@ class DurakGame:
         Returns: bool
         """
         return player == self.current_player
+
 
     def break_cards(self, player: Player) -> bool:
         """Break all cards on the table
@@ -447,6 +456,7 @@ class DurakGame:
         self.finish_round(has_broken=True)
         return True
 
+
     def is_possible_break_cards(self, player: Player) -> bool: 
         """Test whether breaking the cards is possible
 
@@ -462,6 +472,7 @@ class DurakGame:
         return (self.next_allows_break and self.prev_allows_break 
             and self.current_player == player)
     
+
     def is_legal_break_cards(self) -> bool:
         """Checks if a set of the played cards can break the cards on table
 
@@ -486,6 +497,7 @@ class DurakGame:
                     return False
         return True
 
+
     def allow_break_cards(self, player: Player) -> bool:
         """ Indicate an allow break by a player
 
@@ -508,6 +520,7 @@ class DurakGame:
             self.prev_allows_break = True
             allowed_break = True
         return allowed_break
+
 
     def move_top_card(self, player: Player, top_card: Card,
                       new_bottom_card: Card) -> bool:
@@ -536,6 +549,7 @@ class DurakGame:
         self.table_cards[bottom_card] = None
         self.table_cards[new_bottom_card] = top_card
         return True
+
 
     def is_possible_move_top_card(self, player: Player, top_card: Card,
                                   new_bottom_card: Card) -> bool:
@@ -592,6 +606,7 @@ class DurakGame:
         self.finish_round(has_broken=False)
         return True
 
+
     def is_possible_take_cards(self, player: Player) -> bool:
         """Test whether taking the cards is possible
 
@@ -615,7 +630,7 @@ class DurakGame:
         """Pass on the cards to the next player using cards
 
         If passing on is not possible, nothing happens and False is returned.
-        If passing on is illegal, nothing happens and False is returned. TODO
+        If passing on is illegal, a passing on cheat is performed if possible.
         The cards are added to the bottom cards of the table.
         The cards are removed from the hand of the current player.
         The player is updated to the next player. 
@@ -632,20 +647,24 @@ class DurakGame:
         """
         if not self.is_possible_pass_on(player, cards):
             return False
+
         if not self.is_legal_pass_on(cards):
-            print("Illegal passing on")
-            return False # Illegal for now
+            was_successful_cheat = self.pass_illegal_cards(player, cards)
+            if not was_successful_cheat:
+                return False
+
         for card in cards:
             self.table_cards[card] = None
         self.current_player.remove_cards(cards)
         self.current_player = self.next_player(self.current_player)
         return True
 
+
     def pass_on_using_trump(self, player) -> bool:
         """Pass on the cards to the next player using trump card
 
         If passing on is not possible, nothing happens and False is returned.
-        If passing on is illegal, nothing happens and False is returned. TODO
+        If passing on is illegal, a passing on cheat is performed if possible.
         The player is updated to the next player. 
 
         Args:
@@ -660,11 +679,15 @@ class DurakGame:
         """
         if not self.is_possible_pass_on(player, []):
             return False
+
         if not self.is_legal_pass_on_using_trump():
-            print("Illegal passing on (trump)")
-            return False # impossible for now
+            was_successful_cheat = self.pass_illegal_cards(player, [])
+            if not was_successful_cheat:
+                return False
+
         self.current_player = self.next_player(self.current_player)
         return True
+
 
     def is_possible_pass_on(self, player: Player, cards: List[Card]) -> bool:
         """Test whether passing on is possible
@@ -686,6 +709,7 @@ class DurakGame:
            self.next_player(self.current_player).get_card_count()):
             return False
         return all(card is None for card in self.table_cards.values())
+
 
     def is_legal_pass_on(self, cards: List[Card]) -> bool:
         """Test whether passing on is legal
@@ -710,6 +734,7 @@ class DurakGame:
             and all(bottom_card.symbol == symbol
                 for bottom_card, _ in self.table_cards.items()))
 
+
     def is_legal_pass_on_using_trump(self) -> bool:
         """Test whether passing on using trump is legal
 
@@ -729,11 +754,12 @@ class DurakGame:
 
 
     # CHEATING
-    # TODO cheating while another cheat of this player is active is not allowed
+
 
     def can_call_other_player_cheat(self, player: Player) -> bool:
         """Check whether a player can call somebody out for cheating"""
         return player.last_cheat_call < time() - Cheat.DURATION
+
 
     def call_other_player_cheat(self, calling_player: Player, cheating_player: Player):
         """Call out another player for cheating
@@ -760,7 +786,12 @@ class DurakGame:
         calling_player.last_cheat_call = time()
 
 
-    def steal_trump_card(self, player: Player, card: Card):
+    def can_cheat(self, player: Player) -> bool:
+        prev_cheat = self.cheating[player]
+        return not (prev_cheat and prev_cheat.can_rollback())
+
+
+    def steal_trump_card(self, player: Player, card: Card) -> bool:
         """Player replaces the trump card with one of his own cards
 
         The cheat is added to the cheating info.
@@ -774,16 +805,25 @@ class DurakGame:
                 The player stealing the trump card
             card: Card
                 The card to replace the trump card with
+        
+        Returns: bool
         """
-        cheat = Cheat(Cheat.STEAL_TRUMP, self.trump_card)
+        if not self.can_cheat(player):
+            return False
+
+        cheat = StealTrumpCardCheat(player, self, self.trump_card)
         self.cheating[player] = cheat
 
         player.remove_cards([card])
         player.add_cards([self.trump_card])
+
         self.trump_card = card
         self.deck.add_card(card)
 
-    def put_into_deck(self, player: Player, cards: List[Card]):
+        return True
+
+
+    def put_into_deck(self, player: Player, cards: List[Card]) -> bool:
         """Player puts his own cards into the deck
 
         The cheat is added to the cheating info.
@@ -795,12 +835,49 @@ class DurakGame:
                 The player putting cards into the deck
             cards: List[Card]
                 The cards put into the deck
+        
+        Returns: bool
         """
-        cheat = Cheat(Cheat.PUT_INTO_DECK, cards)
+        if not self.can_cheat(player):
+            return False
+
+        cheat = PutIntoDeckCheat(player, self, cards)
         self.cheating[player] = cheat
 
         player.remove_cards(cards)
         self.deck.insert_cards(cards)
+
+        return True
+
+    
+    def throw_illegal_cards(self, player: Player, cards: List[Card]) -> bool:
+        """ Player throws illegal cards on the table
+
+        This should only be called from the throw_cards function.
+        The cheat is added to the cheating info.
+        """
+        if not self.can_cheat(player):
+            return False
+
+        cheat = ThrowIllegalCardsCheat(player, self, cards)
+        self.cheating[player] = cheat
+
+        return True
+
+    
+    def pass_illegal_cards(self, player: Player, cards: List[Card]) -> bool:
+        """ Player passes on cards illegally
+
+        This should only be called from the pass_on / pass_on_using_trump functions.
+        The cheat is added to the cheating info.
+        """
+        if not self.can_cheat(player):
+            return False
+
+        cheat = PassIllegalCardsCheat(player, self, cards)
+        self.cheating[player] = cheat
+
+        return True
 
 
     # HELPER FUNCTIONS

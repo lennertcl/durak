@@ -74,7 +74,7 @@ class Cheat():
         return f"Cheat ({self.player})"
 
 
-class StealTrumpCard(Cheat):
+class StealTrumpCardCheat(Cheat):
     """ Class representing the stealing trump card cheat
 
     Attributes:
@@ -100,7 +100,7 @@ class StealTrumpCard(Cheat):
         self.game.trump_card = self.old_trump_card
 
 
-class PutIntoDeck(Cheat):
+class PutIntoDeckCheat(Cheat):
     """ Class representing the putting cards into the deck cheat
 
     Attributes:
@@ -128,7 +128,7 @@ class PutIntoDeck(Cheat):
         self.player.add_cards(self.cards_in_deck)
 
 
-class ThrowIllegalCards(Cheat):
+class ThrowIllegalCardsCheat(Cheat):
     """ Class representing the throwing illegal cards cheat """
 
     def __init__(self, player: Player, game: DurakGame, cards: list[Card]):
@@ -139,7 +139,7 @@ class ThrowIllegalCards(Cheat):
         return Cheat.__repr__(self) + " (throw illegal cards)"
 
 
-class PassIllegalCards(Cheat):
+class PassIllegalCardsCheat(Cheat):
     """ Class representing the passing with illegal cards cheat """
 
     def __init__(self, player: Player, game: DurakGame, cheated_cards: list[Card]):

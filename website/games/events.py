@@ -170,6 +170,32 @@ def allow_break():
         emit('move', event, room=game.id)
 
 
+@socketio.on("stealtrump")
+def steal_trump(data):
+    game, player = get_game_and_player()
+    card = Card.from_str(data["card"])
+    stole_card = game.steal_trump_card(player, card)
+
+    if stole_card:
+        event =  {"event": "stealtrump",
+                  "player": player.username,
+                  "card": data["card"]}
+        emit('cheat', event, room=game.id)
+
+
+@socketio.on("putintodeck")
+def put_into_deck(data):
+    game, player = get_game_and_player()
+    cards = [Card.from_str(card_str) for card_str in data["cards"]]
+    put_in_deck = game.put_into_deck(player, cards)
+
+    if put_in_deck:
+        event = {"event": "putintodeck",
+                 "player": player.username,
+                 "cards": data["cards"]}
+        emit('cheat', event, room=game.id)
+
+
 # Give every player the necessary information after a round is finished
 def emit_finish_round(game):
     event = {
