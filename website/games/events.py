@@ -3,36 +3,41 @@ from flask_socketio import emit, join_room, leave_room
 from website import socketio, gameManager
 from website.durak_game.card import Card
 
-# Event when user joins a room
+
 @socketio.on("join")
-def join(data):
+def join():
     room = session.get("room")
     join_room(room)
+
     try:
         game = gameManager.current_games[room]
     except KeyError as e:
         print(f"Game not found: {e}")
         return
+
     player = game.get_player(session.get("username"))
     player.sid = request.sid
     event = {"event": "joined",
              "username": session.get("username")}
     emit('status', event, room=room)
 
-# Event when a user leaves a room
+
 @socketio.on("leave")
-def leave(data):
+def leave():
     room = session.get("room")
     leave_room(room)
+
     game, player = get_game_and_player()
     is_next_round = game.remove_player(player)
+
     event = {"event": "left",
              "username": session.get("username")}
     emit('status', event, room=room)
+
     if is_next_round:
         emit_finish_round(game)
 
-# Event when a user sends a chat message
+
 @socketio.on("chat")
 def chat(data):
     game, player = get_game_and_player()
@@ -41,67 +46,72 @@ def chat(data):
              "player": player.username}
     emit('status', event, room=game.id)
 
-# Event when a user clicks start game button
+
 @socketio.on("startgame")
-def start_game(data):
+def start_game():
     game, _ = get_game_and_player()
+
     if game.is_in_progress:
         event = {"event": "message",
                  "body": "Game is already in progress",
                  "type": "danger"}
         emit('status', event, room=game.id)
         return
+
     if (game.get_lobby_count() + game.get_player_count()) <= 1:
         event = {"event": "message",
                  "body": "Not enough players to start the game",
                  "type": "danger"}
         emit('status', event, room=game.id) 
         return
+
     game.start_game()
     event = {"event": "startgame"}
     emit('status', event, room=game.id)
 
-# Event when a user throws cards
+
 @socketio.on("throwcards")
 def throw_cards(data):
     game, player = get_game_and_player()
-    # Translate string cards to actual cards
-    cards = [Card.from_str(card_str) for 
-             card_str in data["cards"]]
+    cards = [Card.from_str(card_str) for card_str in data["cards"]]
     is_thrown = game.throw_cards(player, cards)
+
     if is_thrown:
         event = {"event": "throwcards",
                 "player": player.username,
                 "cards": data["cards"]}
         emit('move', event, room=game.id)
 
-# Event when a user takes cards
-@socketio.on("takecards")
-def take_cards(data):
-    game, player = get_game_and_player()
-    game.take_cards(player)
-    event = {"event": "takecards"}
-    emit('move', event, room=game.id)
-    emit_finish_round(game)
 
-# Event when a player breaks all cards
+@socketio.on("takecards")
+def take_cards():
+    game, player = get_game_and_player()
+    is_taken = game.take_cards(player)
+
+    if is_taken:
+        event = {"event": "takecards"}
+        emit('move', event, room=game.id)
+        emit_finish_round(game)
+
+
 @socketio.on("breakcards")
-def break_cards(data):
+def break_cards():
     game, player = get_game_and_player()
     is_broken = game.break_cards(player)
+
     if is_broken:
         event = {"event": "breakcards"}
         emit('move', event, room=game.id)
         emit_finish_round(game)
 
-# Event when a player places a top card on
-# another card to break
+
 @socketio.on("breakcard")
 def break_card(data):
     game, player = get_game_and_player()
     bottomcard = Card.from_str(data["bottomcard"])
     topcard = Card.from_str(data["topcard"])
     is_broken = game.break_card(player, bottomcard, topcard)
+
     if is_broken:
         event = {"event": "breakcard",
                 "bottomcard": data["bottomcard"],
@@ -109,28 +119,27 @@ def break_card(data):
                 "player": player.username}
         emit('move', event, room=game.id)
 
-# Event when the current player moves the top
-# card to another card
+
 @socketio.on("movetopcard")
 def move_top_card(data):
     game, player = get_game_and_player()
     new_bottomcard = Card.from_str(data["new_bottomcard"])
     topcard = Card.from_str(data["topcard"])
     is_moved = game.move_top_card(player, topcard, new_bottomcard)
+
     if is_moved:
         event = {"event": "movetopcard",
                 "new_bottomcard": data["new_bottomcard"],
                 "topcard": data["topcard"]}
         emit('move', event, room=game.id)
 
-# Event when a user passes cards to other players
+
 @socketio.on("passcards")
 def pass_cards(data):
     game, player = get_game_and_player()
-    # Translate string cards to actual cards
-    cards = [Card.from_str(card_str) for 
-             card_str in data["cards"]]
+    cards = [Card.from_str(card_str) for card_str in data["cards"]]
     is_passed = game.pass_on(player, cards)
+
     if is_passed:
         event = {"event": "passcards", 
                 "player": session.get("username"),
@@ -138,45 +147,47 @@ def pass_cards(data):
                 "cards": data["cards"]}
         emit('move', event, room=game.id)
 
-# Event when a user passed cards using trump
+
 @socketio.on("passtrump")
-def pass_trump(data):
+def pass_trump():
     game, player = get_game_and_player()
     is_passed = game.pass_on_using_trump(player)
+
     if is_passed:
         event = {"event": "passtrump", 
                 "newplayer": game.current_player.username}
         emit('move', event, room=game.id)
 
-# Event when a player allows the current player
-# to break the cards
+
 @socketio.on("allowbreak")
-def allow_break(data):
+def allow_break():
     game, player = get_game_and_player()
     allowed_break = game.allow_break_cards(player)
+
     if allowed_break:
         event = {"event": "allowbreak",
                  "player": player.username}
         emit('move', event, room=game.id)
 
-# Give every player the necessary information
-# after a round is finished
+
+# Give every player the necessary information after a round is finished
 def emit_finish_round(game):
-    event = {"event": "finishround",
-             "newplayer": game.current_player.username,
-             "deckcount": game.deck.get_card_count(),
-             "cardcounts": {
-                player.username:player.get_card_count()
-                for player in game.players}
-            }
+    event = {
+        "event": "finishround",
+        "newplayer": game.current_player.username,
+        "deckcount": game.deck.get_card_count(),
+        "cardcounts": { player.username:player.get_card_count()
+                        for player in game.players}
+    }
+
+    # Players that are playing get info about the new cards
     for player in game.players:
-        # Players that are playing get information
-        # about the new cards that have been dealt
         cards = [str(card) for card in player.cards]
         event.update({"cards": cards})
         emit('status', event, room=player.sid)
     for player in game.lobby:
         emit('status', event, room=player.sid)
+
 
 def get_game_and_player():
     room = session.get("room")
