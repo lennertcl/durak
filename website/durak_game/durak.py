@@ -787,8 +787,9 @@ class DurakGame:
 
 
     def can_cheat(self, player: Player) -> bool:
-        prev_cheat = self.cheating[player]
-        return not (prev_cheat and prev_cheat.can_rollback())
+        if player in self.cheating:
+            return not self.cheating[player].can_rollback()
+        return True
 
 
     def steal_trump_card(self, player: Player, card: Card) -> bool:

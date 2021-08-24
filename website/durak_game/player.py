@@ -43,6 +43,9 @@ class Player:
     def __eq__(self, other):
         return self.username == other.username
 
+    def __hash__(self):
+        return hash(self.username)
+
     def add_cards(self, new_cards: list[Card]):
         """ Add the given cards to the player's cards """
         self.cards += new_cards
