@@ -5,7 +5,7 @@ from website.durak_game.card import Card
 
 
 @socketio.on("join")
-def join():
+def join(data):
     room = session.get("room")
     join_room(room)
 
@@ -23,7 +23,7 @@ def join():
 
 
 @socketio.on("leave")
-def leave():
+def leave(data):
     room = session.get("room")
     leave_room(room)
 
@@ -48,7 +48,7 @@ def chat(data):
 
 
 @socketio.on("startgame")
-def start_game():
+def start_game(data):
     game, _ = get_game_and_player()
 
     if game.is_in_progress:
@@ -84,7 +84,7 @@ def throw_cards(data):
 
 
 @socketio.on("takecards")
-def take_cards():
+def take_cards(data):
     game, player = get_game_and_player()
     is_taken = game.take_cards(player)
 
@@ -95,7 +95,7 @@ def take_cards():
 
 
 @socketio.on("breakcards")
-def break_cards():
+def break_cards(data):
     game, player = get_game_and_player()
     is_broken = game.break_cards(player)
 
@@ -149,7 +149,7 @@ def pass_cards(data):
 
 
 @socketio.on("passtrump")
-def pass_trump():
+def pass_trump(data):
     game, player = get_game_and_player()
     is_passed = game.pass_on_using_trump(player)
 
@@ -160,7 +160,7 @@ def pass_trump():
 
 
 @socketio.on("allowbreak")
-def allow_break():
+def allow_break(data):
     game, player = get_game_and_player()
     allowed_break = game.allow_break_cards(player)
 
