@@ -73,6 +73,16 @@ document.addEventListener('DOMContentLoaded', () =>
             break;
         }
     });
+
+    socket.on('cheat', data =>
+    {
+        switch(data.event)
+        {
+            case 'stealtrump':
+                onStealTrumpCard(data);
+            break;
+        }
+    });
     
 
     // BUTTON EVENTS
@@ -101,6 +111,8 @@ document.addEventListener('DOMContentLoaded', () =>
     document.querySelector('#chat_button').onclick = toggleChatOptions;
 
     document.querySelector('#chat_options').onclick = onChatOptionsClick;
+
+    document.querySelector('#trumpcard').onclick = tryStealTrumpCard;
 
 
     // CARD EVENTS
@@ -762,6 +774,62 @@ document.addEventListener('DOMContentLoaded', () =>
     }
 
 
+    // CHEATING
+
+
+    /**
+     * Let this user replace the trump card with another card
+     * 
+     * @param {string} cardId 
+     *      ID of the card to replace the trump card with
+     * 
+     * The card is removed from your hand.
+     * Your selected cards are cleared.
+     * The stolen trump card is added to your hand.
+     */
+    function doStealTrumpCard(cardId)
+    {
+        var card = document.getElementById(cardId);
+        card.remove();
+
+        selectedCards = [];
+
+        var oldCardSrc = document.getElementById('trumpcard').src;
+        var cardId = 'card' + oldCardSrc.split('/').splice(-1)[0].split('.')[0];
+        ownCards.append(makeCard(cardId));
+    }
+
+    function tryStealTrumpCard()
+    {
+        if (selectedCards.length == 1)
+        {
+            socket.emit('stealtrump', {card: selectedCards[0]});
+        }
+    }
+
+    /**
+     * @param {object} data 
+     *      Object containing information about the steal trump event
+     *      {
+     *          'event': 'stealtrump',
+     *          'player': <username of the player stealing the trump card>
+     *          'card': <id of the card it was replaced with>
+     *      }
+     */
+    function onStealTrumpCard(data)
+    {
+        if (data.player == username)
+        {
+            doStealTrumpCard(data.card);
+        }
+
+        // TODO animateCardMovement(from: data.player, to: trump card)
+
+        var newTrumpCardSrc = imageDir + data.card.replace('card', '') + '.png';
+        document.getElementById('trumpcard').src = newTrumpCardSrc;
+    }
+
+
     // HELPER FUNCTIONS
 
 
@@ -908,9 +976,9 @@ document.addEventListener('DOMContentLoaded', () =>
     function makeCard(cardId)
     {
         const card = document.createElement('img');
-        card.src = imageDir + cardId.replace("card", "") + ".png";
+        card.src = imageDir + cardId.replace('card', '') + '.png';
         card.id = cardId;
-        card.className = "card";
+        card.className = 'card';
         return card;
     }
 

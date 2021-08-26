@@ -36,7 +36,7 @@
                     </div>
                 {% endfor %}
             </div>
-            <div class="deck">
+            <div class="deck" id="deckgroup">
                 <img class="card" id="trumpcard"
                     src="{{ url_for('static', filename='images/' + game.trump_card.get_image()) }}"/>
                 <img class="card" id="deck"
