@@ -81,6 +81,9 @@ document.addEventListener('DOMContentLoaded', () =>
             case 'stealtrump':
                 onStealTrumpCard(data);
             break;
+            case 'putintodeck':
+                onPutIntoDeck(data);
+            break;
         }
     });
     
@@ -113,6 +116,8 @@ document.addEventListener('DOMContentLoaded', () =>
     document.querySelector('#chat_options').onclick = onChatOptionsClick;
 
     document.querySelector('#trumpcard').onclick = tryStealTrumpCard;
+
+    document.querySelector('#deck').onclick = tryPutIntoDeck;
 
 
     // CARD EVENTS
@@ -775,6 +780,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
 
     // CHEATING
+    // STEAL TRUMP CARD
 
 
     /**
@@ -827,6 +833,56 @@ document.addEventListener('DOMContentLoaded', () =>
 
         var newTrumpCardSrc = imageDir + data.card.replace('card', '') + '.png';
         document.getElementById('trumpcard').src = newTrumpCardSrc;
+    }
+
+
+    // PUTTING CARDS INTO DECK
+
+
+    /**
+     * @param {Array<string>} cards 
+     *      List of ids of cards getting put into the deck
+     */
+    function doPutIntoDeck(cards)
+    {
+        for (var i = 0; i < cards.length; i++)
+        {
+            document.getElementById(cards[i]).remove();
+        }
+
+        selectedCards = [];
+    }
+
+    function tryPutIntoDeck()
+    {
+        socket.emit('putintodeck', {cards: selectedCards})
+    }
+
+    /**
+     * @param {object} data 
+     *      Object containing information about the put into deck event
+     *      {
+     *          'event': 'putintodeck',
+     *          'player': <username of the player putting cards into the deck>
+     *          'cards': <list of ids of the cards put into the deck>
+     *      }
+     * 
+     * If this user is putting cards into the deck, the put into deck action is
+     * performed.
+     * Cards are animated from the player to the deck.
+     * The deck count is updated.
+     */
+    function onPutIntoDeck(data)
+    {
+        if (data.player == username)
+        {
+            doPutIntoDeck(data.cards);
+        }
+
+        // TODO animateCardMovement(from: data.player, to: deck)
+
+        var deckCount = document.getElementById('deckcount');
+        deckCount.innerHTML = parseInt(deckCount.innerHTML) + data.cards.length;
     }
 
 
