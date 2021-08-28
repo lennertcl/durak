@@ -84,6 +84,9 @@ document.addEventListener('DOMContentLoaded', () =>
             case 'putintodeck':
                 onPutIntoDeck(data);
             break;
+            case 'callcheat':
+                onCallCheat(data);
+            break;
         }
     });
     
@@ -118,6 +121,13 @@ document.addEventListener('DOMContentLoaded', () =>
     document.querySelector('#trumpcard').onclick = tryStealTrumpCard;
 
     document.querySelector('#deck').onclick = tryPutIntoDeck;
+
+    var otherPlayers = document.getElementById('otherplayers').children;
+    for (var i = 0; i < otherPlayers.length; i++)
+    {
+        var cheater = otherPlayers[i].id.replace('player', '');
+        otherPlayers[i].onclick = () => { tryCallCheat(cheater); }
+    }
 
 
     // CARD EVENTS
@@ -213,7 +223,10 @@ document.addEventListener('DOMContentLoaded', () =>
      */
     function onChat(data)
     {
-        document.getElementById("chat" + data.player).innerText = data.content;
+        if (data.player != username)
+        {
+            document.getElementById("chat" + data.player).innerText = data.content;
+        }
     }
 
 
@@ -883,6 +896,52 @@ document.addEventListener('DOMContentLoaded', () =>
 
         var deckCount = document.getElementById('deckcount');
         deckCount.innerHTML = parseInt(deckCount.innerHTML) + data.cards.length;
+    }
+
+
+    // CALLING OUT CHEATERS
+
+
+    function tryCallCheat(cheater)
+    {
+        socket.emit('callcheat', {'cheater': cheater});
+    }
+
+    /**
+     * @param {object} data 
+     *      Object containing information about the call cheat event
+     *      {
+     *          'event': 'callcheat',
+     *          'player': <username of the player calling out the cheater>,
+     *          'cheater': <username of the player getting called out>,
+     *          'revert': <bool indicating whether the cheat should be reverted>
+     *      }
+     */
+    function onCallCheat(data)
+    {
+        if (data.revert)
+        {
+            onRevertCheat(data);
+        }
+
+        messageData = { 'event': 'chat',
+                        'content': data.cheater + ' cheated!',
+                        'player': data.player };
+        onChat(messageData)
+    }
+
+    function doRevertCheat(data)
+    {
+        // TODO
+    }
+
+    function onRevertCheat(data)
+    {
+        if (data.cheater == username)
+        {
+            doRevertCheat(data);
+        }
+        // TODO revert the cheat
     }
 
 

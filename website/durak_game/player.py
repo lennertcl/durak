@@ -1,4 +1,5 @@
 from __future__ import annotations
+from time import time
 
 class Player:
     """Class representing players of the game
@@ -33,6 +34,7 @@ class Player:
         """ Initialize a player """
         self.username = username
         self.cards = []
+        self.last_cheat_call = time()
 
     def __repr__(self):
         return "Player {}".format(self.username)

@@ -761,7 +761,8 @@ class DurakGame:
         return player.last_cheat_call < time() - Cheat.DURATION
 
 
-    def call_other_player_cheat(self, calling_player: Player, cheating_player: Player):
+    def call_other_player_cheat(self, calling_player: Player, 
+                                cheating_player: Player) -> tuple(bool, bool):
         """Call out another player for cheating
 
         If the player was cheating and the cheat can be rolled back, the cheat
@@ -773,17 +774,25 @@ class DurakGame:
                 The player calling the cheater out
             cheating_player: Player
                 The player getting called out
+
+        Returns: tuple(bool, bool)
+            First element indicates whether the other player was called out
+            Second element indicates whether a cheat was rolled back
         """
         if not self.can_call_other_player_cheat(calling_player):
-            return
+            return (False, False)
 
-        cheat = self.cheating[cheating_player]
-        if cheat and cheat.can_rollback():
-            self.cheating[cheating_player].rollback()
-        if cheat:
-            del self.cheating[cheating_player]
+        rolled_back = False
+        if cheating_player in self.cheating:
+            if self.cheating[cheating_player].can_rollback():
+                self.cheating[cheating_player].rollback()
+                rolled_back = True
+            else:
+                del self.cheating[cheating_player]
 
         calling_player.last_cheat_call = time()
+
+        return (True, rolled_back)
 
 
     def can_cheat(self, player: Player) -> bool:

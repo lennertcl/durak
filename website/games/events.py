@@ -196,14 +196,27 @@ def put_into_deck(data):
         emit('cheat', event, room=game.id)
 
 
-# Give every player the necessary information after a round is finished
+@socketio.on("callcheat")
+def call_cheat(data):
+    game, player = get_game_and_player()
+    cheater = game.get_player(data["cheater"])
+    called_out, should_revert = game.call_other_player_cheat(player, cheater)
+
+    if called_out:
+        event = {"event": "callcheat",
+                "player": player.username,
+                "cheater": cheater.username,
+                "revert": should_revert }
+        emit('cheat', event, room=game.id)
+
+
 def emit_finish_round(game):
     event = {
         "event": "finishround",
         "newplayer": game.current_player.username,
         "deckcount": game.deck.get_card_count(),
         "cardcounts": { player.username:player.get_card_count()
-                        for player in game.players}
+                        for player in game.players }
     }
 
     # Players that are playing get info about the new cards

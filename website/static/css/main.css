@@ -110,7 +110,8 @@
 
 .chat-popup{
     color:black;
-    width:100%;
+    width:max-content;
+    min-width:100%;
 }
 
 
