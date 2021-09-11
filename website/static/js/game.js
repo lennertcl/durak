@@ -813,6 +813,10 @@ document.addEventListener('DOMContentLoaded', () =>
 
         selectedCards = [];
 
+        animateCardMovement(cardId, 
+                            document.getElementById('owncards'),
+                            document.getElementById('trumpcard'));
+
         var oldCardSrc = document.getElementById('trumpcard').src;
         var cardId = 'card' + oldCardSrc.split('/').splice(-1)[0].split('.')[0];
         ownCards.append(makeCard(cardId));
@@ -841,8 +845,12 @@ document.addEventListener('DOMContentLoaded', () =>
         {
             doStealTrumpCard(data.card);
         }
-
-        // TODO animateCardMovement(from: data.player, to: trump card)
+        else
+        {
+            animateCardMovement(data.card, 
+                                document.getElementById('player' + data.player),
+                                document.getElementById('trumpcard'));
+        }
 
         var newTrumpCardSrc = imageDir + data.card.replace('card', '') + '.png';
         document.getElementById('trumpcard').src = newTrumpCardSrc;
@@ -864,6 +872,10 @@ document.addEventListener('DOMContentLoaded', () =>
         }
 
         selectedCards = [];
+
+        animateCardMovement(cards[0],
+                            document.getElementById('owncards'),
+                            document.getElementById('deck'));
     }
 
     function tryPutIntoDeck()
@@ -891,8 +903,12 @@ document.addEventListener('DOMContentLoaded', () =>
         {
             doPutIntoDeck(data.cards);
         }
-
-        // TODO animateCardMovement(from: data.player, to: deck)
+        else
+        {
+            animateCardMovement(data.cards[0],
+                                document.getElementById('player' + data.player),
+                                document.getElementById('deck'));
+        }
 
         var deckCount = document.getElementById('deckcount');
         deckCount.innerHTML = parseInt(deckCount.innerHTML) + data.cards.length;
