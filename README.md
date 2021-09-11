@@ -20,17 +20,6 @@ call durakenv/Scripts/activate.bat
 pip install -r requirements.txt
 ```
 
-### Initialize the database
-
-```python
-from run import app
-from website import db
-from website.models import User
-
-with app.app_context():
-    db.create_all()
-```
-
 ### Set the necessary config variables
 
 Copy the `website/.env.example` file to `website/.env`.
@@ -43,6 +32,18 @@ SQLALCHEMY_DATABASE_URI=<location of the database>
 EMAIL_USER=<app gmail account>
 EMAIL_PASS=<app gmail password>
 ```
+
+### Initialize the database
+
+```python
+from run import app
+from website import db
+from website.models import User
+
+with app.app_context():
+    db.create_all()
+```
+
 
 ### Run the application
 

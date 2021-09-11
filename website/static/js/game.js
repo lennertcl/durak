@@ -1085,15 +1085,20 @@ document.addEventListener('DOMContentLoaded', () =>
      * 
      * @param {string} cardId 
      *      Id of the card to make the element of
+     * @param {bool} setId
+     *      Set the id of the card to the correct id, defaults to true
      * @returns element
      *      The created card element
      */
-    function makeCard(cardId)
+    function makeCard(cardId, setId=true)
     {
         const card = document.createElement('img');
-        card.src = imageDir + cardId.replace('card', '') + '.png';
-        card.id = cardId;
-        card.className = 'card';
+        card.src = imageDir + cardId.replace("card", "") + ".png";
+        card.className = "card";
+        if (setId)
+        {
+            card.id = cardId;
+        }
         return card;
     }
 
@@ -1125,5 +1130,50 @@ document.addEventListener('DOMContentLoaded', () =>
     {
         socket.emit('chat', {'content': event.target.innerText});
         toggleChatOptions();
+    }
+
+    /**
+     * Animate a card moving from one element to another
+     * 
+     * @param {String} cardId 
+     *      Id of the card getting moved
+     * @param {*} fromElement 
+     *      Element to start moving from
+     * @param {*} toElement 
+     *      Element to move to
+     */
+    function animateCardMovement(cardId, fromElement, toElement)
+    {
+        function getPosition(element)
+        {
+            var rect = element.getBoundingClientRect();
+            return {x: rect.left, y: rect.top};
+        }
+
+        const from = getPosition(fromElement);
+        const to = getPosition(toElement);
+        const numberOfSteps = 100;
+        const increaseX = (to.x - from.x) / numberOfSteps;
+        const increaseY = (to.y - from.y) / numberOfSteps;
+
+        var element = makeCard(cardId, setId=false);
+        element.style.left = from.x + 'px';
+        element.style.top = from.y + 'px';
+        document.getElementById('game').append(element);
+
+        var currentStep = 0;
+        var id = setInterval(move, 5);
+        function move()
+        {
+            if (currentStep == numberOfSteps)
+            {
+                clearInterval(id);
+                element.remove();
+            }
+
+            element.style.left = parseFloat(element.style.left.replace('px', '')) + increaseX + 'px';
+            element.style.top = parseFloat(element.style.top.replace('px', '')) + increaseY + 'px';
+            currentStep++;
+        }
     }
 }) 
