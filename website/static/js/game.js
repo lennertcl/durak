@@ -1163,7 +1163,8 @@ document.addEventListener('DOMContentLoaded', () =>
         function getPosition(element)
         {
             var rect = element.getBoundingClientRect();
-            return {x: rect.left, y: rect.top};
+            return {x: (rect.left + rect.right) / 2, 
+                    y: (rect.bottom + rect.top) / 2};
         }
 
         const from = getPosition(fromElement);
@@ -1173,6 +1174,8 @@ document.addEventListener('DOMContentLoaded', () =>
         const increaseY = (to.y - from.y) / numberOfSteps;
 
         var element = makeCard(cardId, setId=false);
+        element.style.position = 'fixed';
+        element.style.transform = 'translate(-50%, -50%)';
         element.style.left = from.x + 'px';
         element.style.top = from.y + 'px';
         document.getElementById('game').append(element);
