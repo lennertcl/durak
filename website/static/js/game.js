@@ -118,10 +118,6 @@ document.addEventListener('DOMContentLoaded', () =>
 
     document.querySelector('#chat_options').onclick = onChatOptionsClick;
 
-    document.querySelector('#trumpcard').onclick = tryStealTrumpCard;
-
-    document.querySelector('#deck').onclick = tryPutIntoDeck;
-
     var otherPlayers = document.getElementById('otherplayers').children;
     for (var i = 0; i < otherPlayers.length; i++)
     {
@@ -148,6 +144,12 @@ document.addEventListener('DOMContentLoaded', () =>
     tableCards.addEventListener('dragstart', onTableCardsDrag);
 
     tableCards.addEventListener('drop', onTableCardsClick);
+
+    document.getElementById('deck').addEventListener('click', tryPutIntoDeck);
+    document.getElementById('deck').addEventListener('drop', tryPutIntoDeck);
+
+    document.getElementById('trumpcard').addEventListener('click', tryStealTrumpCard);
+    document.getElementById('trumpcard').addEventListener('drop', tryStealTrumpCard);
 
 
     // GAME STATUS
