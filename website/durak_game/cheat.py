@@ -53,7 +53,7 @@ class Cheat():
         The cheated cards are removed from the table cards
         """
         all_cheated_cards = []
-        for player, cheated_cards in self.cheated_cards:
+        for player, cheated_cards in self.cheated_cards.items():
             player.add_cards(cheated_cards)
             all_cheated_cards += cheated_cards
         
@@ -96,7 +96,7 @@ class StealTrumpCardCheat(Cheat):
         The old trump card is replaced with the player's card
         """
         Cheat.rollback(self)
-        self.player.add_cards(self.game.trump_card)
+        self.player.add_cards([self.game.trump_card])
         self.game.trump_card = self.old_trump_card
 
 
