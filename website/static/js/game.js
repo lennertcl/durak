@@ -487,10 +487,12 @@ document.addEventListener('DOMContentLoaded', () =>
         }
         else
         {
-            var playerCount = document.
-                getElementById('cardcount' + data.player);
-            playerCount.innerHTML = parseInt(playerCount.innerHTML)
-                                        - data.cards.length;
+            var playerCount = document.getElementById('cardcount' + data.player);
+            playerCount.innerHTML = parseInt(playerCount.innerHTML) - data.cards.length;
+
+            animateCardMovement(data.cards[0],
+                                document.getElementById('player' + data.player),
+                                tableCards);
         }
 
         for(var i = 0; i < data.cards.length; i++)
@@ -514,6 +516,8 @@ document.addEventListener('DOMContentLoaded', () =>
      */
     function doThrowCards()
     {
+        animateCardMovement(selectedCards[0], ownCards, tableCards);
+
         for(var i = 0; i < selectedCards.length; i++)
         {
             var card = document.getElementById(selectedCards[i]);
@@ -540,8 +544,9 @@ document.addEventListener('DOMContentLoaded', () =>
             var playerCount = document.getElementById('cardcount' + currentPlayer);
             var tableCardCount = tableCards.getElementsByClassName('table-card-pair').length;
 
-            playerCount.innerHTML = parseInt(playerCount.innerHTML)
-                                     + tableCardCount;
+            playerCount.innerHTML = parseInt(playerCount.innerHTML) + tableCardCount;
+
+            animateCardMovement('', tableCards, document.getElementById('player' + currentPlayer), true);
         }
     }
 
@@ -576,6 +581,8 @@ document.addEventListener('DOMContentLoaded', () =>
                 ownCards.append(topCard);
             }
         }
+
+        animateCardMovement('', tableCards, ownCards, true);
     }
 
 
@@ -623,12 +630,15 @@ document.addEventListener('DOMContentLoaded', () =>
         {
             document.getElementById(selectedCards[0]).remove();
             selectedCards = [];
+            animateCardMovement(data.topcard, ownCards, tableCards);
         }
         else
         {
-            var playerCount = document.
-                getElementById('cardcount' + currentPlayer);
+            var playerCount = document.getElementById('cardcount' + currentPlayer);
             playerCount.innerHTML = parseInt(playerCount.innerHTML) - 1;
+            animateCardMovement(data.topcard, 
+                                document.getElementById('player' + data.player),
+                                tableCards);
         }
 
         var pair = document.getElementById(data.bottomcard).parentElement;
@@ -916,6 +926,20 @@ document.addEventListener('DOMContentLoaded', () =>
         deckCount.innerHTML = parseInt(deckCount.innerHTML) + data.cards.length;
     }
 
+    function revertDoPutIntoDeck(data)
+    {
+
+    }
+
+    function revertPutIntoDeck(data)
+    {
+        if (data.player == username)
+        {
+            revertDoPutIntoDeck(data);
+        }
+
+    }
+
 
     // CALLING OUT CHEATERS
 
@@ -948,18 +972,19 @@ document.addEventListener('DOMContentLoaded', () =>
         onChat(messageData)
     }
 
-    function doRevertCheat(data)
-    {
-        // TODO
-    }
-
+    /**
+     * @param {object} data 
+     *      Object containing information about the call cheat event
+     *      {
+     *          'event': 'callcheat',
+     *          'player': <username of the player calling out the cheater>,
+     *          'cheater': <username of the player getting called out>,
+     *          'revert': true
+     *      }
+     */
     function onRevertCheat(data)
     {
-        if (data.cheater == username)
-        {
-            doRevertCheat(data);
-        }
-        // TODO revert the cheat
+        // TODO check type of cheat and revert this type
     }
 
 
@@ -1159,8 +1184,10 @@ document.addEventListener('DOMContentLoaded', () =>
      *      Element to start moving from
      * @param {*} toElement 
      *      Element to move to
+     * @param {Boolean} hidden
+     *      Indicates whether the card is hidden
      */
-    function animateCardMovement(cardId, fromElement, toElement)
+    function animateCardMovement(cardId, fromElement, toElement, hidden=false)
     {
         function getPosition(element)
         {
@@ -1175,7 +1202,14 @@ document.addEventListener('DOMContentLoaded', () =>
         const increaseX = (to.x - from.x) / numberOfSteps;
         const increaseY = (to.y - from.y) / numberOfSteps;
 
-        var element = makeCard(cardId, setId=false);
+        if (hidden)
+        {
+            var element = makeCard('red_back', setId=false);
+        }
+        else
+        {
+            var element = makeCard(cardId, setId=false);
+        }
         element.style.position = 'fixed';
         element.style.transform = 'translate(-50%, -50%)';
         element.style.left = from.x + 'px';
