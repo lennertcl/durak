@@ -806,7 +806,7 @@ document.addEventListener('DOMContentLoaded', () =>
         }
 
         var otherPlayers = document.getElementById('otherplayers').
-            getElementsByTagName('div');
+            getElementsByClassName('other-player');
         for(var i = 0; i < otherPlayers.length; i++)
         {
             var name = otherPlayers[i].id.replace('player', '');
