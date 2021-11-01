@@ -8,15 +8,15 @@ Create virtual environment and activate it.
 
 Linux/mac:
 ```
-python -m venv durakenv
-source durakenv/bin/activate
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
 Windows:
 ```
-python -m venv durakenv
-call durakenv/Scripts/activate.bat
+python -m venv venv
+call venv/Scripts/activate.bat
 pip install -r requirements.txt
 ```
 
